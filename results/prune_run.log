@@ -1,0 +1,188 @@
+Loading model from exp/transformer-1B-dense-baseline ...
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.47s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.25it/s]
+  1.36B parameters
+PPL eval:   0%|          | 0/653 [00:00<?, ?it/s]PPL eval:   0%|          | 1/653 [00:00<04:56,  2.20it/s]PPL eval:   1%|          | 8/653 [00:00<00:35, 18.35it/s]PPL eval:   2%|▏         | 16/653 [00:00<00:19, 32.87it/s]PPL eval:   4%|▎         | 24/653 [00:00<00:14, 43.99it/s]PPL eval:   5%|▍         | 32/653 [00:00<00:11, 51.81it/s]PPL eval:   6%|▌         | 40/653 [00:01<00:10, 58.05it/s]PPL eval:   7%|▋         | 48/653 [00:01<00:09, 61.99it/s]PPL eval:   9%|▊         | 56/653 [00:01<00:09, 65.45it/s]PPL eval:  10%|▉         | 64/653 [00:01<00:08, 67.53it/s]PPL eval:  11%|█         | 72/653 [00:01<00:08, 69.32it/s]PPL eval:  12%|█▏        | 80/653 [00:01<00:08, 70.33it/s]PPL eval:  13%|█▎        | 88/653 [00:01<00:07, 70.94it/s]PPL eval:  15%|█▍        | 96/653 [00:01<00:07, 71.56it/s]PPL eval:  16%|█▌        | 104/653 [00:01<00:07, 72.11it/s]PPL eval:  17%|█▋        | 112/653 [00:01<00:07, 71.96it/s]PPL eval:  18%|█▊        | 120/653 [00:02<00:07, 72.28it/s]PPL eval:  20%|█▉        | 128/653 [00:02<00:07, 72.57it/s]PPL eval:  21%|██        | 136/653 [00:02<00:07, 72.81it/s]PPL eval:  22%|██▏       | 144/653 [00:02<00:06, 73.01it/s]PPL eval:  23%|██▎       | 152/653 [00:02<00:06, 73.05it/s]PPL eval:  25%|██▍       | 160/653 [00:02<00:06, 73.30it/s]PPL eval:  26%|██▌       | 168/653 [00:02<00:06, 73.29it/s]PPL eval:  27%|██▋       | 176/653 [00:02<00:06, 73.43it/s]PPL eval:  28%|██▊       | 184/653 [00:02<00:06, 73.46it/s]PPL eval:  29%|██▉       | 192/653 [00:03<00:06, 73.54it/s]PPL eval:  31%|███       | 200/653 [00:03<00:06, 73.53it/s]PPL eval:  32%|███▏      | 208/653 [00:03<00:06, 73.70it/s]PPL eval:  33%|███▎      | 216/653 [00:03<00:05, 73.55it/s]PPL eval:  34%|███▍      | 224/653 [00:03<00:05, 73.64it/s]PPL eval:  36%|███▌      | 232/653 [00:03<00:05, 73.66it/s]PPL eval:  37%|███▋      | 240/653 [00:03<00:05, 73.77it/s]PPL eval:  38%|███▊      | 248/653 [00:03<00:05, 73.80it/s]PPL eval:  39%|███▉      | 256/653 [00:03<00:05, 74.01it/s]PPL eval:  40%|████      | 264/653 [00:04<00:05, 74.25it/s]PPL eval:  42%|████▏     | 272/653 [00:04<00:05, 74.22it/s]PPL eval:  43%|████▎     | 280/653 [00:04<00:05, 74.20it/s]PPL eval:  44%|████▍     | 288/653 [00:04<00:04, 74.24it/s]PPL eval:  45%|████▌     | 296/653 [00:04<00:04, 74.38it/s]PPL eval:  47%|████▋     | 304/653 [00:04<00:04, 74.34it/s]PPL eval:  48%|████▊     | 312/653 [00:04<00:04, 74.25it/s]PPL eval:  49%|████▉     | 320/653 [00:04<00:04, 74.27it/s]PPL eval:  50%|█████     | 328/653 [00:04<00:04, 74.30it/s]PPL eval:  51%|█████▏    | 336/653 [00:05<00:04, 74.35it/s]PPL eval:  53%|█████▎    | 344/653 [00:05<00:04, 74.38it/s]PPL eval:  54%|█████▍    | 352/653 [00:05<00:04, 74.42it/s]PPL eval:  55%|█████▌    | 360/653 [00:05<00:03, 74.38it/s]PPL eval:  56%|█████▋    | 368/653 [00:05<00:03, 74.39it/s]PPL eval:  58%|█████▊    | 376/653 [00:05<00:03, 74.39it/s]PPL eval:  59%|█████▉    | 384/653 [00:05<00:03, 74.42it/s]PPL eval:  60%|██████    | 392/653 [00:05<00:03, 74.45it/s]PPL eval:  61%|██████▏   | 400/653 [00:05<00:03, 74.50it/s]PPL eval:  62%|██████▏   | 408/653 [00:05<00:03, 74.54it/s]PPL eval:  64%|██████▎   | 416/653 [00:06<00:03, 74.50it/s]PPL eval:  65%|██████▍   | 424/653 [00:06<00:03, 74.52it/s]PPL eval:  66%|██████▌   | 432/653 [00:06<00:02, 74.45it/s]PPL eval:  67%|██████▋   | 440/653 [00:06<00:02, 73.89it/s]PPL eval:  69%|██████▊   | 448/653 [00:06<00:02, 74.16it/s]PPL eval:  70%|██████▉   | 456/653 [00:06<00:02, 74.28it/s]PPL eval:  71%|███████   | 464/653 [00:06<00:02, 74.41it/s]PPL eval:  72%|███████▏  | 472/653 [00:06<00:02, 74.48it/s]PPL eval:  74%|███████▎  | 480/653 [00:06<00:02, 74.51it/s]PPL eval:  75%|███████▍  | 488/653 [00:07<00:02, 74.58it/s]PPL eval:  76%|███████▌  | 496/653 [00:07<00:02, 74.63it/s]PPL eval:  77%|███████▋  | 504/653 [00:07<00:01, 74.60it/s]PPL eval:  78%|███████▊  | 512/653 [00:07<00:01, 74.56it/s]PPL eval:  80%|███████▉  | 520/653 [00:07<00:01, 74.45it/s]PPL eval:  81%|████████  | 528/653 [00:07<00:01, 74.47it/s]PPL eval:  82%|████████▏ | 536/653 [00:07<00:01, 74.52it/s]PPL eval:  83%|████████▎ | 544/653 [00:07<00:01, 74.58it/s]PPL eval:  85%|████████▍ | 552/653 [00:07<00:01, 74.65it/s]PPL eval:  86%|████████▌ | 560/653 [00:08<00:01, 74.71it/s]PPL eval:  87%|████████▋ | 568/653 [00:08<00:01, 74.70it/s]PPL eval:  88%|████████▊ | 576/653 [00:08<00:01, 74.70it/s]PPL eval:  89%|████████▉ | 584/653 [00:08<00:00, 74.71it/s]PPL eval:  91%|█████████ | 592/653 [00:08<00:00, 74.73it/s]PPL eval:  92%|█████████▏| 600/653 [00:08<00:00, 74.69it/s]PPL eval:  93%|█████████▎| 608/653 [00:08<00:00, 74.64it/s]PPL eval:  94%|█████████▍| 616/653 [00:08<00:00, 74.66it/s]PPL eval:  96%|█████████▌| 624/653 [00:08<00:00, 74.68it/s]PPL eval:  97%|█████████▋| 632/653 [00:08<00:00, 74.69it/s]PPL eval:  98%|█████████▊| 640/653 [00:09<00:00, 74.14it/s]PPL eval:  99%|█████████▉| 648/653 [00:09<00:00, 74.01it/s]PPL eval: 100%|██████████| 653/653 [00:09<00:00, 70.37it/s]
+Perplexity before pruning: 19.5209
+Building calibration batches (64 × 4 × 512) ...
+Collecting activations:   0%|          | 0/64 [00:00<?, ?it/s]Collecting activations:   2%|▏         | 1/64 [00:01<01:12,  1.15s/it]Collecting activations:   3%|▎         | 2/64 [00:02<01:09,  1.11s/it]Collecting activations:   5%|▍         | 3/64 [00:03<01:07,  1.11s/it]Collecting activations:   6%|▋         | 4/64 [00:04<01:06,  1.11s/it]Collecting activations:   8%|▊         | 5/64 [00:05<01:07,  1.14s/it]Collecting activations:   9%|▉         | 6/64 [00:06<01:05,  1.14s/it]Collecting activations:  11%|█         | 7/64 [00:07<01:04,  1.14s/it]Collecting activations:  12%|█▎        | 8/64 [00:09<01:03,  1.14s/it]Collecting activations:  14%|█▍        | 9/64 [00:10<01:02,  1.15s/it]Collecting activations:  16%|█▌        | 10/64 [00:11<01:02,  1.15s/it]Collecting activations:  17%|█▋        | 11/64 [00:12<01:01,  1.16s/it]Collecting activations:  19%|█▉        | 12/64 [00:13<01:00,  1.16s/it]Collecting activations:  20%|██        | 13/64 [00:14<00:59,  1.16s/it]Collecting activations:  22%|██▏       | 14/64 [00:16<00:58,  1.17s/it]Collecting activations:  23%|██▎       | 15/64 [00:17<00:57,  1.17s/it]Collecting activations:  25%|██▌       | 16/64 [00:18<00:55,  1.16s/it]Collecting activations:  27%|██▋       | 17/64 [00:19<00:54,  1.16s/it]Collecting activations:  28%|██▊       | 18/64 [00:20<00:53,  1.16s/it]Collecting activations:  30%|██▉       | 19/64 [00:21<00:51,  1.15s/it]Collecting activations:  31%|███▏      | 20/64 [00:22<00:50,  1.16s/it]Collecting activations:  33%|███▎      | 21/64 [00:24<00:49,  1.16s/it]Collecting activations:  34%|███▍      | 22/64 [00:25<00:48,  1.16s/it]Collecting activations:  36%|███▌      | 23/64 [00:26<00:47,  1.15s/it]Collecting activations:  38%|███▊      | 24/64 [00:27<00:46,  1.15s/it]Collecting activations:  39%|███▉      | 25/64 [00:28<00:44,  1.15s/it]Collecting activations:  41%|████      | 26/64 [00:29<00:43,  1.15s/it]Collecting activations:  42%|████▏     | 27/64 [00:31<00:42,  1.15s/it]Collecting activations:  44%|████▍     | 28/64 [00:32<00:41,  1.16s/it]Collecting activations:  45%|████▌     | 29/64 [00:33<00:40,  1.16s/it]Collecting activations:  47%|████▋     | 30/64 [00:34<00:39,  1.16s/it]Collecting activations:  48%|████▊     | 31/64 [00:35<00:38,  1.16s/it]Collecting activations:  50%|█████     | 32/64 [00:36<00:37,  1.16s/it]Collecting activations:  52%|█████▏    | 33/64 [00:38<00:35,  1.16s/it]Collecting activations:  53%|█████▎    | 34/64 [00:39<00:34,  1.16s/it]Collecting activations:  55%|█████▍    | 35/64 [00:40<00:33,  1.16s/it]Collecting activations:  56%|█████▋    | 36/64 [00:41<00:32,  1.16s/it]Collecting activations:  58%|█████▊    | 37/64 [00:42<00:31,  1.16s/it]Collecting activations:  59%|█████▉    | 38/64 [00:43<00:30,  1.16s/it]Collecting activations:  61%|██████    | 39/64 [00:45<00:28,  1.16s/it]Collecting activations:  62%|██████▎   | 40/64 [00:46<00:27,  1.16s/it]Collecting activations:  64%|██████▍   | 41/64 [00:47<00:26,  1.16s/it]Collecting activations:  66%|██████▌   | 42/64 [00:48<00:25,  1.16s/it]Collecting activations:  67%|██████▋   | 43/64 [00:49<00:24,  1.16s/it]Collecting activations:  69%|██████▉   | 44/64 [00:50<00:23,  1.17s/it]Collecting activations:  70%|███████   | 45/64 [00:52<00:22,  1.17s/it]Collecting activations:  72%|███████▏  | 46/64 [00:53<00:20,  1.16s/it]Collecting activations:  73%|███████▎  | 47/64 [00:54<00:19,  1.16s/it]Collecting activations:  75%|███████▌  | 48/64 [00:55<00:18,  1.16s/it]Collecting activations:  77%|███████▋  | 49/64 [00:56<00:17,  1.15s/it]Collecting activations:  78%|███████▊  | 50/64 [00:57<00:16,  1.15s/it]Collecting activations:  80%|███████▉  | 51/64 [00:58<00:14,  1.15s/it]Collecting activations:  81%|████████▏ | 52/64 [01:00<00:13,  1.14s/it]Collecting activations:  83%|████████▎ | 53/64 [01:01<00:12,  1.13s/it]Collecting activations:  84%|████████▍ | 54/64 [01:02<00:11,  1.12s/it]Collecting activations:  86%|████████▌ | 55/64 [01:03<00:10,  1.12s/it]Collecting activations:  88%|████████▊ | 56/64 [01:04<00:08,  1.12s/it]Collecting activations:  89%|████████▉ | 57/64 [01:05<00:07,  1.12s/it]Collecting activations:  91%|█████████ | 58/64 [01:06<00:06,  1.12s/it]Collecting activations:  92%|█████████▏| 59/64 [01:07<00:05,  1.12s/it]Collecting activations:  94%|█████████▍| 60/64 [01:08<00:04,  1.12s/it]Collecting activations:  95%|█████████▌| 61/64 [01:10<00:03,  1.12s/it]Collecting activations:  97%|█████████▋| 62/64 [01:11<00:02,  1.12s/it]Collecting activations:  98%|█████████▊| 63/64 [01:12<00:01,  1.12s/it]Collecting activations: 100%|██████████| 64/64 [01:13<00:00,  1.12s/it]Collecting activations: 100%|██████████| 64/64 [01:13<00:00,  1.15s/it]
+
+Layer regimes: 24 Gaussian, 145 heavy-tailed
+
+Layer                                                            MaxKurt        Regime
+--------------------------------------------------------------------------------------
+model.layers.0.attn.q_proj                                       10.1575  heavy-tailed
+model.layers.0.attn.k_proj                                       10.1575  heavy-tailed
+model.layers.0.attn.v_proj                                       10.1575  heavy-tailed
+model.layers.0.attn.o_proj                                      370.9190  heavy-tailed
+model.layers.0.mlp.gate_proj                                      2.6194  heavy-tailed
+model.layers.0.mlp.up_proj                                        2.6194  heavy-tailed
+model.layers.0.mlp.down_proj                                         nan      Gaussian
+model.layers.1.attn.q_proj                                        4.7017  heavy-tailed
+model.layers.1.attn.k_proj                                        4.7017  heavy-tailed
+model.layers.1.attn.v_proj                                        4.7017  heavy-tailed
+model.layers.1.attn.o_proj                                      231.3018  heavy-tailed
+model.layers.1.mlp.gate_proj                                      3.7153  heavy-tailed
+model.layers.1.mlp.up_proj                                        3.7153  heavy-tailed
+model.layers.1.mlp.down_proj                                         nan      Gaussian
+model.layers.2.attn.q_proj                                        4.1849  heavy-tailed
+model.layers.2.attn.k_proj                                        4.1849  heavy-tailed
+model.layers.2.attn.v_proj                                        4.1849  heavy-tailed
+model.layers.2.attn.o_proj                                      177.0100  heavy-tailed
+model.layers.2.mlp.gate_proj                                      3.5755  heavy-tailed
+model.layers.2.mlp.up_proj                                        3.5755  heavy-tailed
+model.layers.2.mlp.down_proj                                         nan      Gaussian
+model.layers.3.attn.q_proj                                        4.1042  heavy-tailed
+model.layers.3.attn.k_proj                                        4.1042  heavy-tailed
+model.layers.3.attn.v_proj                                        4.1042  heavy-tailed
+model.layers.3.attn.o_proj                                      154.2601  heavy-tailed
+model.layers.3.mlp.gate_proj                                      3.8421  heavy-tailed
+model.layers.3.mlp.up_proj                                        3.8421  heavy-tailed
+model.layers.3.mlp.down_proj                                         nan      Gaussian
+model.layers.4.attn.q_proj                                       44.0794  heavy-tailed
+model.layers.4.attn.k_proj                                       44.0794  heavy-tailed
+model.layers.4.attn.v_proj                                       44.0794  heavy-tailed
+model.layers.4.attn.o_proj                                       99.4237  heavy-tailed
+model.layers.4.mlp.gate_proj                                     40.1699  heavy-tailed
+model.layers.4.mlp.up_proj                                       40.1699  heavy-tailed
+model.layers.4.mlp.down_proj                                         nan      Gaussian
+model.layers.5.attn.q_proj                                       83.4163  heavy-tailed
+model.layers.5.attn.k_proj                                       83.4163  heavy-tailed
+model.layers.5.attn.v_proj                                       83.4163  heavy-tailed
+model.layers.5.attn.o_proj                                       62.7102  heavy-tailed
+model.layers.5.mlp.gate_proj                                     76.7692  heavy-tailed
+model.layers.5.mlp.up_proj                                       76.7692  heavy-tailed
+model.layers.5.mlp.down_proj                                         nan      Gaussian
+model.layers.6.attn.q_proj                                       58.0268  heavy-tailed
+model.layers.6.attn.k_proj                                       58.0268  heavy-tailed
+model.layers.6.attn.v_proj                                       58.0268  heavy-tailed
+model.layers.6.attn.o_proj                                       97.6545  heavy-tailed
+model.layers.6.mlp.gate_proj                                     64.3059  heavy-tailed
+model.layers.6.mlp.up_proj                                       64.3059  heavy-tailed
+model.layers.6.mlp.down_proj                                         nan      Gaussian
+model.layers.7.attn.q_proj                                       63.6919  heavy-tailed
+model.layers.7.attn.k_proj                                       63.6919  heavy-tailed
+model.layers.7.attn.v_proj                                       63.6919  heavy-tailed
+model.layers.7.attn.o_proj                                      119.3093  heavy-tailed
+model.layers.7.mlp.gate_proj                                     64.5146  heavy-tailed
+model.layers.7.mlp.up_proj                                       64.5146  heavy-tailed
+model.layers.7.mlp.down_proj                                         nan      Gaussian
+model.layers.8.attn.q_proj                                       60.1216  heavy-tailed
+model.layers.8.attn.k_proj                                       60.1216  heavy-tailed
+model.layers.8.attn.v_proj                                       60.1216  heavy-tailed
+model.layers.8.attn.o_proj                                      112.6823  heavy-tailed
+model.layers.8.mlp.gate_proj                                     61.3791  heavy-tailed
+model.layers.8.mlp.up_proj                                       61.3791  heavy-tailed
+model.layers.8.mlp.down_proj                                         nan      Gaussian
+model.layers.9.attn.q_proj                                       57.5140  heavy-tailed
+model.layers.9.attn.k_proj                                       57.5140  heavy-tailed
+model.layers.9.attn.v_proj                                       57.5140  heavy-tailed
+model.layers.9.attn.o_proj                                      176.6827  heavy-tailed
+model.layers.9.mlp.gate_proj                                     58.6271  heavy-tailed
+model.layers.9.mlp.up_proj                                       58.6271  heavy-tailed
+model.layers.9.mlp.down_proj                                         nan      Gaussian
+model.layers.10.attn.q_proj                                      57.5090  heavy-tailed
+model.layers.10.attn.k_proj                                      57.5090  heavy-tailed
+model.layers.10.attn.v_proj                                      57.5090  heavy-tailed
+model.layers.10.attn.o_proj                                     121.0595  heavy-tailed
+model.layers.10.mlp.gate_proj                                    59.5417  heavy-tailed
+model.layers.10.mlp.up_proj                                      59.5417  heavy-tailed
+model.layers.10.mlp.down_proj                                        nan      Gaussian
+model.layers.11.attn.q_proj                                      57.4932  heavy-tailed
+model.layers.11.attn.k_proj                                      57.4932  heavy-tailed
+model.layers.11.attn.v_proj                                      57.4932  heavy-tailed
+model.layers.11.attn.o_proj                                      66.5609  heavy-tailed
+model.layers.11.mlp.gate_proj                                    56.8636  heavy-tailed
+model.layers.11.mlp.up_proj                                      56.8636  heavy-tailed
+model.layers.11.mlp.down_proj                                        nan      Gaussian
+model.layers.12.attn.q_proj                                      56.5905  heavy-tailed
+model.layers.12.attn.k_proj                                      56.5905  heavy-tailed
+model.layers.12.attn.v_proj                                      56.5905  heavy-tailed
+model.layers.12.attn.o_proj                                     104.8379  heavy-tailed
+model.layers.12.mlp.gate_proj                                    57.1456  heavy-tailed
+model.layers.12.mlp.up_proj                                      57.1456  heavy-tailed
+model.layers.12.mlp.down_proj                                        nan      Gaussian
+model.layers.13.attn.q_proj                                      56.6575  heavy-tailed
+model.layers.13.attn.k_proj                                      56.6575  heavy-tailed
+model.layers.13.attn.v_proj                                      56.6575  heavy-tailed
+model.layers.13.attn.o_proj                                     112.5910  heavy-tailed
+model.layers.13.mlp.gate_proj                                    59.4824  heavy-tailed
+model.layers.13.mlp.up_proj                                      59.4824  heavy-tailed
+model.layers.13.mlp.down_proj                                        nan      Gaussian
+model.layers.14.attn.q_proj                                      56.9773  heavy-tailed
+model.layers.14.attn.k_proj                                      56.9773  heavy-tailed
+model.layers.14.attn.v_proj                                      56.9773  heavy-tailed
+model.layers.14.attn.o_proj                                      68.5070  heavy-tailed
+model.layers.14.mlp.gate_proj                                    59.4385  heavy-tailed
+model.layers.14.mlp.up_proj                                      59.4385  heavy-tailed
+model.layers.14.mlp.down_proj                                        nan      Gaussian
+model.layers.15.attn.q_proj                                      59.2053  heavy-tailed
+model.layers.15.attn.k_proj                                      59.2053  heavy-tailed
+model.layers.15.attn.v_proj                                      59.2053  heavy-tailed
+model.layers.15.attn.o_proj                                      48.6787  heavy-tailed
+model.layers.15.mlp.gate_proj                                    62.8015  heavy-tailed
+model.layers.15.mlp.up_proj                                      62.8015  heavy-tailed
+model.layers.15.mlp.down_proj                                        nan      Gaussian
+model.layers.16.attn.q_proj                                      63.6542  heavy-tailed
+model.layers.16.attn.k_proj                                      63.6542  heavy-tailed
+model.layers.16.attn.v_proj                                      63.6542  heavy-tailed
+model.layers.16.attn.o_proj                                     115.7671  heavy-tailed
+model.layers.16.mlp.gate_proj                                    65.9753  heavy-tailed
+model.layers.16.mlp.up_proj                                      65.9753  heavy-tailed
+model.layers.16.mlp.down_proj                                        nan      Gaussian
+model.layers.17.attn.q_proj                                      66.9305  heavy-tailed
+model.layers.17.attn.k_proj                                      66.9305  heavy-tailed
+model.layers.17.attn.v_proj                                      66.9305  heavy-tailed
+model.layers.17.attn.o_proj                                      45.7228  heavy-tailed
+model.layers.17.mlp.gate_proj                                    69.9678  heavy-tailed
+model.layers.17.mlp.up_proj                                      69.9678  heavy-tailed
+model.layers.17.mlp.down_proj                                        nan      Gaussian
+model.layers.18.attn.q_proj                                      69.7450  heavy-tailed
+model.layers.18.attn.k_proj                                      69.7450  heavy-tailed
+model.layers.18.attn.v_proj                                      69.7450  heavy-tailed
+model.layers.18.attn.o_proj                                      56.1559  heavy-tailed
+model.layers.18.mlp.gate_proj                                    70.8525  heavy-tailed
+model.layers.18.mlp.up_proj                                      70.8525  heavy-tailed
+model.layers.18.mlp.down_proj                                        nan      Gaussian
+model.layers.19.attn.q_proj                                      71.3734  heavy-tailed
+model.layers.19.attn.k_proj                                      71.3734  heavy-tailed
+model.layers.19.attn.v_proj                                      71.3734  heavy-tailed
+model.layers.19.attn.o_proj                                      81.8965  heavy-tailed
+model.layers.19.mlp.gate_proj                                    74.7456  heavy-tailed
+model.layers.19.mlp.up_proj                                      74.7456  heavy-tailed
+model.layers.19.mlp.down_proj                                        nan      Gaussian
+model.layers.20.attn.q_proj                                      75.0702  heavy-tailed
+model.layers.20.attn.k_proj                                      75.0702  heavy-tailed
+model.layers.20.attn.v_proj                                      75.0702  heavy-tailed
+model.layers.20.attn.o_proj                                      38.9838  heavy-tailed
+model.layers.20.mlp.gate_proj                                    77.7592  heavy-tailed
+model.layers.20.mlp.up_proj                                      77.7592  heavy-tailed
+model.layers.20.mlp.down_proj                                        nan      Gaussian
+model.layers.21.attn.q_proj                                      78.4094  heavy-tailed
+model.layers.21.attn.k_proj                                      78.4094  heavy-tailed
+model.layers.21.attn.v_proj                                      78.4094  heavy-tailed
+model.layers.21.attn.o_proj                                      65.8837  heavy-tailed
+model.layers.21.mlp.gate_proj                                    79.7858  heavy-tailed
+model.layers.21.mlp.up_proj                                      79.7858  heavy-tailed
+model.layers.21.mlp.down_proj                                        nan      Gaussian
+model.layers.22.attn.q_proj                                      81.4591  heavy-tailed
+model.layers.22.attn.k_proj                                      81.4591  heavy-tailed
+model.layers.22.attn.v_proj                                      81.4591  heavy-tailed
+model.layers.22.attn.o_proj                                      53.4441  heavy-tailed
+model.layers.22.mlp.gate_proj                                    83.1220  heavy-tailed
+model.layers.22.mlp.up_proj                                      83.1220  heavy-tailed
+model.layers.22.mlp.down_proj                                        nan      Gaussian
+model.layers.23.attn.q_proj                                      50.9581  heavy-tailed
+model.layers.23.attn.k_proj                                      50.9581  heavy-tailed
+model.layers.23.attn.v_proj                                      50.9581  heavy-tailed
+model.layers.23.attn.o_proj                                      37.4274  heavy-tailed
+model.layers.23.mlp.gate_proj                                    46.7900  heavy-tailed
+model.layers.23.mlp.up_proj                                      46.7900  heavy-tailed
+model.layers.23.mlp.down_proj                                        nan      Gaussian
+lm_head                                                           5.5662  heavy-tailed
+
+Pruning 50.0% of channels globally ...
+Actual sparsity: 50.00%
+PPL eval:   0%|          | 0/653 [00:00<?, ?it/s]PPL eval:   1%|          | 7/653 [00:00<00:09, 69.63it/s]PPL eval:   2%|▏         | 15/653 [00:00<00:08, 71.33it/s]PPL eval:   4%|▎         | 23/653 [00:00<00:08, 71.96it/s]PPL eval:   5%|▍         | 31/653 [00:00<00:08, 72.21it/s]PPL eval:   6%|▌         | 39/653 [00:00<00:08, 72.45it/s]PPL eval:   7%|▋         | 47/653 [00:00<00:08, 72.68it/s]PPL eval:   8%|▊         | 55/653 [00:00<00:08, 72.80it/s]PPL eval:  10%|▉         | 63/653 [00:00<00:08, 72.93it/s]PPL eval:  11%|█         | 71/653 [00:00<00:07, 73.05it/s]PPL eval:  12%|█▏        | 79/653 [00:01<00:07, 73.11it/s]PPL eval:  13%|█▎        | 87/653 [00:01<00:07, 73.15it/s]PPL eval:  15%|█▍        | 95/653 [00:01<00:07, 73.21it/s]PPL eval:  16%|█▌        | 103/653 [00:01<00:07, 73.22it/s]PPL eval:  17%|█▋        | 111/653 [00:01<00:07, 73.26it/s]PPL eval:  18%|█▊        | 119/653 [00:01<00:07, 73.25it/s]PPL eval:  19%|█▉        | 127/653 [00:01<00:07, 73.27it/s]PPL eval:  21%|██        | 135/653 [00:01<00:07, 73.25it/s]PPL eval:  22%|██▏       | 143/653 [00:01<00:06, 73.27it/s]PPL eval:  23%|██▎       | 151/653 [00:02<00:06, 73.29it/s]PPL eval:  24%|██▍       | 159/653 [00:02<00:06, 73.33it/s]PPL eval:  26%|██▌       | 167/653 [00:02<00:06, 73.18it/s]PPL eval:  27%|██▋       | 175/653 [00:02<00:06, 73.38it/s]PPL eval:  28%|██▊       | 183/653 [00:02<00:06, 72.23it/s]PPL eval:  29%|██▉       | 191/653 [00:02<00:06, 72.85it/s]PPL eval:  30%|███       | 199/653 [00:02<00:06, 73.37it/s]PPL eval:  32%|███▏      | 207/653 [00:02<00:06, 73.78it/s]PPL eval:  33%|███▎      | 215/653 [00:02<00:05, 74.11it/s]PPL eval:  34%|███▍      | 223/653 [00:03<00:05, 74.07it/s]PPL eval:  35%|███▌      | 231/653 [00:03<00:05, 74.09it/s]PPL eval:  37%|███▋      | 239/653 [00:03<00:05, 74.00it/s]PPL eval:  38%|███▊      | 247/653 [00:03<00:05, 73.97it/s]PPL eval:  39%|███▉      | 255/653 [00:03<00:05, 73.99it/s]PPL eval:  40%|████      | 263/653 [00:03<00:05, 74.00it/s]PPL eval:  42%|████▏     | 271/653 [00:03<00:05, 74.04it/s]PPL eval:  43%|████▎     | 279/653 [00:03<00:05, 74.04it/s]PPL eval:  44%|████▍     | 287/653 [00:03<00:04, 74.07it/s]PPL eval:  45%|████▌     | 295/653 [00:04<00:04, 74.11it/s]PPL eval:  46%|████▋     | 303/653 [00:04<00:04, 73.96it/s]PPL eval:  48%|████▊     | 311/653 [00:04<00:04, 73.85it/s]PPL eval:  49%|████▉     | 319/653 [00:04<00:04, 73.78it/s]PPL eval:  50%|█████     | 327/653 [00:04<00:04, 73.75it/s]PPL eval:  51%|█████▏    | 335/653 [00:04<00:04, 73.73it/s]PPL eval:  53%|█████▎    | 343/653 [00:04<00:04, 73.71it/s]PPL eval:  54%|█████▍    | 351/653 [00:04<00:04, 73.73it/s]PPL eval:  55%|█████▍    | 359/653 [00:04<00:03, 73.68it/s]PPL eval:  56%|█████▌    | 367/653 [00:04<00:03, 73.65it/s]PPL eval:  57%|█████▋    | 375/653 [00:05<00:03, 73.63it/s]PPL eval:  59%|█████▊    | 383/653 [00:05<00:03, 73.56it/s]PPL eval:  60%|█████▉    | 391/653 [00:05<00:03, 73.62it/s]PPL eval:  61%|██████    | 399/653 [00:05<00:03, 73.57it/s]PPL eval:  62%|██████▏   | 407/653 [00:05<00:03, 73.56it/s]PPL eval:  64%|██████▎   | 415/653 [00:05<00:03, 73.50it/s]PPL eval:  65%|██████▍   | 423/653 [00:05<00:03, 73.47it/s]PPL eval:  66%|██████▌   | 431/653 [00:05<00:03, 73.51it/s]PPL eval:  67%|██████▋   | 439/653 [00:05<00:02, 73.50it/s]PPL eval:  68%|██████▊   | 447/653 [00:06<00:02, 73.58it/s]PPL eval:  70%|██████▉   | 455/653 [00:06<00:02, 73.61it/s]PPL eval:  71%|███████   | 463/653 [00:06<00:02, 73.61it/s]PPL eval:  72%|███████▏  | 471/653 [00:06<00:02, 73.61it/s]PPL eval:  73%|███████▎  | 479/653 [00:06<00:02, 73.61it/s]PPL eval:  75%|███████▍  | 487/653 [00:06<00:02, 73.72it/s]PPL eval:  76%|███████▌  | 495/653 [00:06<00:02, 73.90it/s]PPL eval:  77%|███████▋  | 503/653 [00:06<00:02, 73.93it/s]PPL eval:  78%|███████▊  | 511/653 [00:06<00:01, 73.97it/s]PPL eval:  79%|███████▉  | 519/653 [00:07<00:01, 73.97it/s]PPL eval:  81%|████████  | 527/653 [00:07<00:01, 73.76it/s]PPL eval:  82%|████████▏ | 535/653 [00:07<00:01, 73.77it/s]PPL eval:  83%|████████▎ | 543/653 [00:07<00:01, 73.24it/s]PPL eval:  84%|████████▍ | 551/653 [00:07<00:01, 73.23it/s]PPL eval:  86%|████████▌ | 559/653 [00:07<00:01, 73.23it/s]PPL eval:  87%|████████▋ | 567/653 [00:07<00:01, 73.36it/s]PPL eval:  88%|████████▊ | 575/653 [00:07<00:01, 73.45it/s]PPL eval:  89%|████████▉ | 583/653 [00:07<00:00, 73.49it/s]PPL eval:  91%|█████████ | 591/653 [00:08<00:00, 73.54it/s]PPL eval:  92%|█████████▏| 599/653 [00:08<00:00, 73.56it/s]PPL eval:  93%|█████████▎| 607/653 [00:08<00:00, 73.53it/s]PPL eval:  94%|█████████▍| 615/653 [00:08<00:00, 73.55it/s]PPL eval:  95%|█████████▌| 623/653 [00:08<00:00, 73.65it/s]PPL eval:  97%|█████████▋| 631/653 [00:08<00:00, 73.71it/s]PPL eval:  98%|█████████▊| 639/653 [00:08<00:00, 73.76it/s]PPL eval:  99%|█████████▉| 647/653 [00:08<00:00, 73.79it/s]PPL eval: 100%|██████████| 653/653 [00:08<00:00, 73.50it/s]
+Perplexity after pruning: 17930.6175  (Δ = +17911.0966)
+Saved to exp/transformer-1B-pruned-50pct

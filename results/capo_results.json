@@ -1,0 +1,62 @@
+{
+  "gated_deltanet_N20000": {
+    "loss": 2.5327969257831575,
+    "bits_per_param": 0.03282135884288597,
+    "num_params": 21923504,
+    "N": 20000
+  },
+  "gated_deltaproduct_N20000": {
+    "loss": 2.338628814935684,
+    "bits_per_param": 0.03033516531725849,
+    "num_params": 24307712,
+    "N": 20000
+  },
+  "gated_deltanet_N50000": {
+    "loss": 2.1952884888648985,
+    "bits_per_param": 0.08558544578776403,
+    "num_params": 21923504,
+    "N": 50000
+  },
+  "gated_deltaproduct_N50000": {
+    "loss": 1.7494455893039704,
+    "bits_per_param": 0.08139898258583317,
+    "num_params": 24307712,
+    "N": 50000
+  },
+  "gated_deltanet_N100000": {
+    "loss": 1.9031006195545197,
+    "bits_per_param": 0.17728642330974737,
+    "num_params": 21923504,
+    "N": 100000
+  },
+  "gated_deltaproduct_N100000": {
+    "loss": 1.3482767679691314,
+    "bits_per_param": 0.1703709153727404,
+    "num_params": 24307712,
+    "N": 100000
+  },
+  "gated_deltanet_N200000": {
+    "loss": 2.1148206803798675,
+    "bits_per_param": 0.34571018744199916,
+    "num_params": 21923504,
+    "N": 200000
+  },
+  "gated_deltaproduct_N200000": {
+    "loss": 1.070193817615509,
+    "bits_per_param": 0.35124069418052345,
+    "num_params": 24307712,
+    "N": 200000
+  },
+  "gated_deltanet_N500000": {
+    "loss": 0.9993805899620056,
+    "bits_per_param": 0.981007030505069,
+    "num_params": 21923504,
+    "N": 500000
+  },
+  "gated_deltaproduct_N500000": {
+    "loss": 0.9272506115436554,
+    "bits_per_param": 0.8915935838153233,
+    "num_params": 24307712,
+    "N": 500000
+  }
+}

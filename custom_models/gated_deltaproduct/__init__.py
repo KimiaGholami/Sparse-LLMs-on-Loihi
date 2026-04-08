@@ -1,0 +1,9 @@
+from transformers import AutoConfig, AutoModel, AutoModelForCausalLM
+
+from .config_gated_deltaproduct import GatedDeltaProductConfig
+from .modeling_gated_deltaproduct import GatedDeltaProductForCausalLM, GatedDeltaProductModel
+
+# Register with HuggingFace AutoModel system
+AutoConfig.register("gated_deltaproduct", GatedDeltaProductConfig)
+AutoModel.register(GatedDeltaProductConfig, GatedDeltaProductModel)
+AutoModelForCausalLM.register(GatedDeltaProductConfig, GatedDeltaProductForCausalLM)
