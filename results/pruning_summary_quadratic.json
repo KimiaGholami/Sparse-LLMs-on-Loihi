@@ -1,1533 +1,1026 @@
 {
-  "method": "cancellation_aware_quadratic",
+  "method": "cancellation_aware_greedy_quadratic",
   "sparsity_target": 0.5,
   "sparsity_actual": 0.5,
-  "sparsity_structure": "semi-structured (constant per output neuron)",
-  "scoring": "quadratic form: 2*w_ji*(Sigma_X @ w_j)[i] - w_ji^2 * Sigma_X[i,i]",
+  "sparsity_structure": "semi-structured (constant k per output neuron)",
+  "scoring": "greedy min of w_S^T Sigma_X[S,S] w_S; marginal step: w_{ji}^2*Sigma[i,i] + 2*w_{ji}*(Sigma@w_{S'_j})[i]",
   "n_calib_batches": 64,
   "ppl_before": 19.520931745961164,
-  "ppl_after": 763528691.9924083,
+  "ppl_after": 1102.6062277524647,
   "layer_info": {
     "model.layers.0.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1683974,
-      "fraction_negative": 0.4014906883239746,
-      "score_min": -0.037670381367206573,
-      "score_max": 0.3446866571903229,
-      "score_mean": 0.0004075355245731771
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020154429088007
     },
     "model.layers.0.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1625155,
-      "fraction_negative": 0.3874671459197998,
-      "score_min": -0.07132190465927124,
-      "score_max": 0.21339237689971924,
-      "score_mean": 0.0004587738949339837
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5018614529398063
     },
     "model.layers.0.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1857351,
-      "fraction_negative": 0.4428269863128662,
-      "score_min": -0.022475942969322205,
-      "score_max": 0.06116047129034996,
-      "score_mean": 8.657240687170997e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.502083637614171
     },
     "model.layers.0.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1879669,
-      "fraction_negative": 0.4481480121612549,
-      "score_min": -0.4487279951572418,
-      "score_max": 8.052355766296387,
-      "score_mean": 0.00045370100997388363
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012329936843231
     },
     "model.layers.0.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 3996575,
-      "fraction_negative": 0.3464937210083008,
-      "score_min": -0.13093937933444977,
-      "score_max": 16.183128356933594,
-      "score_mean": 0.0003098527085967362
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5013688759603342
     },
     "model.layers.0.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 3852818,
-      "fraction_negative": 0.33403032476251776,
-      "score_min": -0.11530794203281403,
-      "score_max": 0.17371106147766113,
-      "score_mean": 8.802114462014288e-05
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5015803511424731
     },
     "model.layers.0.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.1.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1653598,
-      "fraction_negative": 0.39424848556518555,
-      "score_min": -0.32255297899246216,
-      "score_max": 10.774801254272461,
-      "score_mean": 0.0006801941199228168
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.501647859724386
     },
     "model.layers.1.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1764851,
-      "fraction_negative": 0.4207732677459717,
-      "score_min": -0.6431317925453186,
-      "score_max": 35.001495361328125,
-      "score_mean": 0.0019184891134500504
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5018050714904845
     },
     "model.layers.1.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1683971,
-      "fraction_negative": 0.4014899730682373,
-      "score_min": -0.25916752219200134,
-      "score_max": 0.07929354161024094,
-      "score_mean": 4.7935929615050554e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5018160792972568
     },
     "model.layers.1.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1840750,
-      "fraction_negative": 0.43886899948120117,
-      "score_min": -0.016898194327950478,
-      "score_max": 0.039982181042432785,
-      "score_mean": 2.0282161131035537e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5011889922886883
     },
     "model.layers.1.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4622907,
-      "fraction_negative": 0.4007952430031516,
-      "score_min": -0.0785481259226799,
-      "score_max": 3.2374391555786133,
-      "score_mean": 0.00019989919383078814
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021581864193854
     },
     "model.layers.1.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4407911,
-      "fraction_negative": 0.38215559179132635,
-      "score_min": -0.052677422761917114,
-      "score_max": 0.17253147065639496,
-      "score_mean": 0.00010207253217231482
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.502320141386776
     },
     "model.layers.1.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.2.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1708094,
-      "fraction_negative": 0.4072413444519043,
-      "score_min": -0.4104054570198059,
-      "score_max": 8.138708114624023,
-      "score_mean": 0.0006408289773389697
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021076817666331
     },
     "model.layers.2.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1810707,
-      "fraction_negative": 0.43170619010925293,
-      "score_min": -1.177066683769226,
-      "score_max": 29.005718231201172,
-      "score_mean": 0.0018090882804244757
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021222395165109
     },
     "model.layers.2.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1679205,
-      "fraction_negative": 0.40035367012023926,
-      "score_min": -0.20260514318943024,
-      "score_max": 0.029992012307047844,
-      "score_mean": 7.192671182565391e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022984837506873
     },
     "model.layers.2.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1822090,
-      "fraction_negative": 0.434420108795166,
-      "score_min": -0.012528017163276672,
-      "score_max": 0.057134173810482025,
-      "score_mean": 2.401367964921519e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5011534033632697
     },
     "model.layers.2.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4735354,
-      "fraction_negative": 0.410544135353782,
-      "score_min": -0.0806344673037529,
-      "score_max": 1.3481619358062744,
-      "score_mean": 0.0002539913111831993
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021606624301228
     },
     "model.layers.2.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4512470,
-      "fraction_negative": 0.3912206129594283,
-      "score_min": -0.05102478712797165,
-      "score_max": 0.7117930054664612,
-      "score_mean": 0.00014017410285305232
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022563617366966
     },
     "model.layers.2.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.3.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1715472,
-      "fraction_negative": 0.4090003967285156,
-      "score_min": -0.32467976212501526,
-      "score_max": 13.08629322052002,
-      "score_mean": 0.0006763942074030638
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020984638471407
     },
     "model.layers.3.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1804196,
-      "fraction_negative": 0.43015384674072266,
-      "score_min": -2.2006373405456543,
-      "score_max": 82.37261962890625,
-      "score_mean": 0.002136725001037121
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020952420500366
     },
     "model.layers.3.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1684675,
-      "fraction_negative": 0.4016578197479248,
-      "score_min": -0.23651382327079773,
-      "score_max": 0.031213361769914627,
-      "score_mean": 9.614073496777564e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022512307264938
     },
     "model.layers.3.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1809054,
-      "fraction_negative": 0.43131208419799805,
-      "score_min": -0.013885914348065853,
-      "score_max": 0.08877163380384445,
-      "score_mean": 4.030000854982063e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012243723939241
     },
     "model.layers.3.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4810181,
-      "fraction_negative": 0.4170314615423029,
-      "score_min": -0.13117702305316925,
-      "score_max": 1.0467612743377686,
-      "score_mean": 0.00032986787846311927
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022905784152004
     },
     "model.layers.3.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4569851,
-      "fraction_negative": 0.3961954116821289,
-      "score_min": -0.09712034463882446,
-      "score_max": 1.465705394744873,
-      "score_mean": 0.00017813185695558786
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022757223507759
     },
     "model.layers.3.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.4.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1704770,
-      "fraction_negative": 0.4064488410949707,
-      "score_min": -0.3963264226913452,
-      "score_max": 13.541679382324219,
-      "score_mean": 0.0008309838594868779
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020895740736498
     },
     "model.layers.4.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1796471,
-      "fraction_negative": 0.4283120632171631,
-      "score_min": -0.7130754590034485,
-      "score_max": 59.608009338378906,
-      "score_mean": 0.0017850790172815323
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020990306447795
     },
     "model.layers.4.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1686445,
-      "fraction_negative": 0.40207982063293457,
-      "score_min": -0.35229310393333435,
-      "score_max": 0.21491947770118713,
-      "score_mean": 0.00014624580217059702
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022468753341123
     },
     "model.layers.4.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1808465,
-      "fraction_negative": 0.4311716556549072,
-      "score_min": -0.0300658717751503,
-      "score_max": 0.07346218824386597,
-      "score_mean": 4.873149373452179e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012900015941929
     },
     "model.layers.4.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4875582,
-      "fraction_negative": 0.42270157553932886,
-      "score_min": -0.1767076551914215,
-      "score_max": 1.4033112525939941,
-      "score_mean": 0.00036576937418431044
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021509075444465
     },
     "model.layers.4.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4621534,
-      "fraction_negative": 0.4006762071089311,
-      "score_min": -0.13582295179367065,
-      "score_max": 1.1779391765594482,
-      "score_mean": 0.00020070327445864677
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022344356175159
     },
     "model.layers.4.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.5.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1735111,
-      "fraction_negative": 0.4136826992034912,
-      "score_min": -0.4823971688747406,
-      "score_max": 8.390609741210938,
-      "score_mean": 0.0007640841649845243
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021024910935209
     },
     "model.layers.5.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1793695,
-      "fraction_negative": 0.42765021324157715,
-      "score_min": -0.7098023891448975,
-      "score_max": 78.73558807373047,
-      "score_mean": 0.0016927584074437618
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021808881563875
     },
     "model.layers.5.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1680014,
-      "fraction_negative": 0.4005465507507324,
-      "score_min": -0.3207845389842987,
-      "score_max": 0.23767603933811188,
-      "score_mean": 0.00016725300520192832
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5023203502069588
     },
     "model.layers.5.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1841433,
-      "fraction_negative": 0.43903183937072754,
-      "score_min": -0.026472004130482674,
-      "score_max": 0.07135779410600662,
-      "score_mean": 6.716325151501223e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5009947298558926
     },
     "model.layers.5.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4877523,
-      "fraction_negative": 0.422869855707342,
-      "score_min": -0.38150590658187866,
-      "score_max": 0.990713357925415,
-      "score_mean": 0.00035528899752534926
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.502133814120922
     },
     "model.layers.5.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4642058,
-      "fraction_negative": 0.4024555899880149,
-      "score_min": -0.21852047741413116,
-      "score_max": 1.1584067344665527,
-      "score_mean": 0.000220150948734954
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021550242851907
     },
     "model.layers.5.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.6.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1740295,
-      "fraction_negative": 0.4149186611175537,
-      "score_min": -0.559726893901825,
-      "score_max": 8.823528289794922,
-      "score_mean": 0.000996324815787375
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.502257584826338
     },
     "model.layers.6.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1797699,
-      "fraction_negative": 0.4286048412322998,
-      "score_min": -1.1978702545166016,
-      "score_max": 33.933982849121094,
-      "score_mean": 0.0014366821851581335
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.502115408113392
     },
     "model.layers.6.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1696352,
-      "fraction_negative": 0.40444183349609375,
-      "score_min": -0.3930938243865967,
-      "score_max": 0.3759053349494934,
-      "score_mean": 0.0002776114270091057
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020399047016282
     },
     "model.layers.6.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1834706,
-      "fraction_negative": 0.43742799758911133,
-      "score_min": -0.08177005499601364,
-      "score_max": 0.1403244584798813,
-      "score_mean": 8.289302058983594e-05
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.501140456511944
     },
     "model.layers.6.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4874777,
-      "fraction_negative": 0.42263178391890094,
-      "score_min": -0.20362529158592224,
-      "score_max": 0.7339311242103577,
-      "score_mean": 0.0003937043948099017
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021401383893115
     },
     "model.layers.6.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4695726,
-      "fraction_negative": 0.4071084802800959,
-      "score_min": -0.15624745190143585,
-      "score_max": 0.5884271264076233,
-      "score_mean": 0.0002600405423436314
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021971164677267
     },
     "model.layers.6.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.7.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1720931,
-      "fraction_negative": 0.41030192375183105,
-      "score_min": -0.41430091857910156,
-      "score_max": 12.058451652526855,
-      "score_mean": 0.000993277644738555
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020379656570748
     },
     "model.layers.7.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1789645,
-      "fraction_negative": 0.4266846179962158,
-      "score_min": -0.5539276599884033,
-      "score_max": 40.552852630615234,
-      "score_mean": 0.0016514501767233014
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021477454102518
     },
     "model.layers.7.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1656680,
-      "fraction_negative": 0.39498329162597656,
-      "score_min": -0.3327268064022064,
-      "score_max": 0.2519681453704834,
-      "score_mean": 0.0003227124398108572
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021226869883308
     },
     "model.layers.7.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1806858,
-      "fraction_negative": 0.430788516998291,
-      "score_min": -0.04471816495060921,
-      "score_max": 0.10460110008716583,
-      "score_mean": 0.0001002643330139108
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012950132785771
     },
     "model.layers.7.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4807987,
-      "fraction_negative": 0.41684124686501245,
-      "score_min": -0.28290459513664246,
-      "score_max": 0.6187951564788818,
-      "score_mean": 0.00041750853415578604
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021965198386333
     },
     "model.layers.7.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4682864,
-      "fraction_negative": 0.4059933749112216,
-      "score_min": -0.17576181888580322,
-      "score_max": 0.5850856304168701,
-      "score_mean": 0.000311035051709041
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021477752417064
     },
     "model.layers.7.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.8.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1727142,
-      "fraction_negative": 0.41178274154663086,
-      "score_min": -0.40784788131713867,
-      "score_max": 10.191478729248047,
-      "score_mean": 0.0009489405201748013
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021383186705768
     },
     "model.layers.8.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1789018,
-      "fraction_negative": 0.42653512954711914,
-      "score_min": -0.7879033088684082,
-      "score_max": 46.14595413208008,
-      "score_mean": 0.0015506179770454764
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022594045450727
     },
     "model.layers.8.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1650180,
-      "fraction_negative": 0.3934335708618164,
-      "score_min": -0.27372896671295166,
-      "score_max": 0.21534544229507446,
-      "score_mean": 0.0003457661368884146
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022603889830768
     },
     "model.layers.8.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1828808,
-      "fraction_negative": 0.4360218048095703,
-      "score_min": -0.027230801060795784,
-      "score_max": 0.07864729315042496,
-      "score_mean": 0.0001006594393402338
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012636305882667
     },
     "model.layers.8.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4755750,
-      "fraction_negative": 0.41231242093172943,
-      "score_min": -0.25368762016296387,
-      "score_max": 1.3132115602493286,
-      "score_mean": 0.00043046678183600307
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022730673513105
     },
     "model.layers.8.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4669360,
-      "fraction_negative": 0.4048226096413352,
-      "score_min": -0.2632068991661072,
-      "score_max": 1.1320475339889526,
-      "score_mean": 0.0003510690003167838
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022002189390121
     },
     "model.layers.8.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.9.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1734212,
-      "fraction_negative": 0.4134683609008789,
-      "score_min": -0.3542403280735016,
-      "score_max": 8.151601791381836,
-      "score_mean": 0.0009353366331197321
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022144187114339
     },
     "model.layers.9.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1782885,
-      "fraction_negative": 0.42507290840148926,
-      "score_min": -0.6539312601089478,
-      "score_max": 49.69548797607422,
-      "score_mean": 0.0015951837413012981
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021100086200971
     },
     "model.layers.9.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1648905,
-      "fraction_negative": 0.3931295871734619,
-      "score_min": -0.3861721158027649,
-      "score_max": 0.15029451251029968,
-      "score_mean": 0.00038299255538731813
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022547806695992
     },
     "model.layers.9.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1864095,
-      "fraction_negative": 0.44443488121032715,
-      "score_min": -0.04144858941435814,
-      "score_max": 0.10353833436965942,
-      "score_mean": 0.00013570376904681325
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5014268384767534
     },
     "model.layers.9.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4711833,
-      "fraction_negative": 0.40850491957231,
-      "score_min": -0.2085089087486267,
-      "score_max": 0.701049268245697,
-      "score_mean": 0.0004414147406350821
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022862826857283
     },
     "model.layers.9.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4664292,
-      "fraction_negative": 0.40438322587446734,
-      "score_min": -0.12936702370643616,
-      "score_max": 1.025221824645996,
-      "score_mean": 0.0003867184277623892
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022289167984024
     },
     "model.layers.9.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.10.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1733024,
-      "fraction_negative": 0.41318511962890625,
-      "score_min": -0.4068863093852997,
-      "score_max": 10.539010047912598,
-      "score_mean": 0.0009270793525502086
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5023643814340482
     },
     "model.layers.10.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1782085,
-      "fraction_negative": 0.424882173538208,
-      "score_min": -0.8911644220352173,
-      "score_max": 65.41358947753906,
-      "score_mean": 0.0013657644158229232
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021310397956378
     },
     "model.layers.10.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1662969,
-      "fraction_negative": 0.3964827060699463,
-      "score_min": -0.28179043531417847,
-      "score_max": 0.7842926979064941,
-      "score_mean": 0.0003964723146054894
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021679711365163
     },
     "model.layers.10.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1866931,
-      "fraction_negative": 0.4451110363006592,
-      "score_min": -0.15353840589523315,
-      "score_max": 0.1607958823442459,
-      "score_mean": 0.00014576251851394773
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5011277483122556
     },
     "model.layers.10.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4737873,
-      "fraction_negative": 0.410762526772239,
-      "score_min": -0.1884165108203888,
-      "score_max": 0.5788750648498535,
-      "score_mean": 0.0004628297465387732
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021179437870388
     },
     "model.layers.10.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4699052,
-      "fraction_negative": 0.4073968367143111,
-      "score_min": -0.17100480198860168,
-      "score_max": 1.2273986339569092,
-      "score_mean": 0.000419504358433187
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022276340458517
     },
     "model.layers.10.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.11.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1743444,
-      "fraction_negative": 0.41566944122314453,
-      "score_min": -0.4287804067134857,
-      "score_max": 11.641551971435547,
-      "score_mean": 0.0011147736804559827
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022349129207906
     },
     "model.layers.11.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1780750,
-      "fraction_negative": 0.4245638847351074,
-      "score_min": -0.968254029750824,
-      "score_max": 22.079627990722656,
-      "score_mean": 0.0015636358875781298
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021958635466306
     },
     "model.layers.11.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1660811,
-      "fraction_negative": 0.3959681987762451,
-      "score_min": -0.3750789761543274,
-      "score_max": 0.25742608308792114,
-      "score_mean": 0.0005333211738616228
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021215832245082
     },
     "model.layers.11.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1823582,
-      "fraction_negative": 0.43477582931518555,
-      "score_min": -0.06102917343378067,
-      "score_max": 0.20706845819950104,
-      "score_mean": 0.00021584330534096807
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5013316164734543
     },
     "model.layers.11.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4714497,
-      "fraction_negative": 0.4087358821522106,
-      "score_min": -0.31608134508132935,
-      "score_max": 0.6206480264663696,
-      "score_mean": 0.0004822390910703689
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.50213488805329
     },
     "model.layers.11.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4686325,
-      "fraction_negative": 0.40629343553022906,
-      "score_min": -0.1380932331085205,
-      "score_max": 0.6109154224395752,
-      "score_mean": 0.00045192500692792237
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.502226440787665
     },
     "model.layers.11.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.12.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1724547,
-      "fraction_negative": 0.4111640453338623,
-      "score_min": -0.5084741711616516,
-      "score_max": 17.849058151245117,
-      "score_mean": 0.0011294024297967553
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022171035423539
     },
     "model.layers.12.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1769176,
-      "fraction_negative": 0.42180442810058594,
-      "score_min": -0.9612445831298828,
-      "score_max": 41.05710983276367,
-      "score_mean": 0.0014836920890957117
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021819322573008
     },
     "model.layers.12.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1651501,
-      "fraction_negative": 0.39374852180480957,
-      "score_min": -0.29561907052993774,
-      "score_max": 0.23328663408756256,
-      "score_mean": 0.0005652605905197561
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021542486673692
     },
     "model.layers.12.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1855586,
-      "fraction_negative": 0.44240617752075195,
-      "score_min": -0.18040713667869568,
-      "score_max": 0.4122864007949829,
-      "score_mean": 0.00024617573944851756
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012257744722936
     },
     "model.layers.12.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4672361,
-      "fraction_negative": 0.40508278933438385,
-      "score_min": -0.2683674097061157,
-      "score_max": 0.44465315341949463,
-      "score_mean": 0.000522659276612103
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021347090645619
     },
     "model.layers.12.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4659958,
-      "fraction_negative": 0.4040074781938033,
-      "score_min": -0.12158256769180298,
-      "score_max": 0.6990699172019958,
-      "score_mean": 0.0005057089147157967
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5022126884870631
     },
     "model.layers.12.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.13.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1728039,
-      "fraction_negative": 0.41199660301208496,
-      "score_min": -0.3061298131942749,
-      "score_max": 14.091197967529297,
-      "score_mean": 0.0010558869689702988
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021691345632484
     },
     "model.layers.13.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1762839,
-      "fraction_negative": 0.42029356956481934,
-      "score_min": -1.3670315742492676,
-      "score_max": 31.683650970458984,
-      "score_mean": 0.001451066811569035
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5023236614984268
     },
     "model.layers.13.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1651230,
-      "fraction_negative": 0.39368391036987305,
-      "score_min": -0.27891531586647034,
-      "score_max": 0.8066657781600952,
-      "score_mean": 0.0005852061440236866
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022523046588618
     },
     "model.layers.13.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1877526,
-      "fraction_negative": 0.44763708114624023,
-      "score_min": -0.3403722941875458,
-      "score_max": 1.3066964149475098,
-      "score_mean": 0.00029582393472082913
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012320987406831
     },
     "model.layers.13.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4685377,
-      "fraction_negative": 0.40621124614368787,
-      "score_min": -0.15137553215026855,
-      "score_max": 0.992698073387146,
-      "score_mean": 0.0005694518913514912
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021423459169568
     },
     "model.layers.13.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4670599,
-      "fraction_negative": 0.40493002804842865,
-      "score_min": -0.13152240216732025,
-      "score_max": 0.600746750831604,
-      "score_mean": 0.0005528777837753296
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021302641778165
     },
     "model.layers.13.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.14.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1723523,
-      "fraction_negative": 0.4109199047088623,
-      "score_min": -0.2625592052936554,
-      "score_max": 9.938275337219238,
-      "score_mean": 0.0011122140567749739
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022184757892687
     },
     "model.layers.14.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1748069,
-      "fraction_negative": 0.41677212715148926,
-      "score_min": -0.788653552532196,
-      "score_max": 64.37158203125,
-      "score_mean": 0.001678199041634798
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021626313061308
     },
     "model.layers.14.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1618915,
-      "fraction_negative": 0.38597941398620605,
-      "score_min": -0.2582016587257385,
-      "score_max": 0.32370445132255554,
-      "score_mean": 0.0006984553183428943
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020988516560514
     },
     "model.layers.14.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1875714,
-      "fraction_negative": 0.4472050666809082,
-      "score_min": -0.4734101891517639,
-      "score_max": 0.8135539889335632,
-      "score_mean": 0.0003890878870151937
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5013110029382789
     },
     "model.layers.14.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4699803,
-      "fraction_negative": 0.4074619466608221,
-      "score_min": -0.14550502598285675,
-      "score_max": 0.8977571129798889,
-      "score_mean": 0.0006284710834734142
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5020534481820473
     },
     "model.layers.14.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4679872,
-      "fraction_negative": 0.4057339754971591,
-      "score_min": -0.1750413328409195,
-      "score_max": 1.719714641571045,
-      "score_mean": 0.0006184337544254959
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021933278729839
     },
     "model.layers.14.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.15.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1733704,
-      "fraction_negative": 0.4133472442626953,
-      "score_min": -0.45605480670928955,
-      "score_max": 14.160893440246582,
-      "score_mean": 0.0011796250473707914
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022109284312378
     },
     "model.layers.15.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1760704,
-      "fraction_negative": 0.4197845458984375,
-      "score_min": -1.2922215461730957,
-      "score_max": 22.230440139770508,
-      "score_mean": 0.0015696280170232058
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021886443346011
     },
     "model.layers.15.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1655818,
-      "fraction_negative": 0.394777774810791,
-      "score_min": -0.2594660222530365,
-      "score_max": 0.3523884415626526,
-      "score_mean": 0.0006689565489068627
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020829813221682
     },
     "model.layers.15.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1844275,
-      "fraction_negative": 0.4397094249725342,
-      "score_min": -1.0894030332565308,
-      "score_max": 1.4810618162155151,
-      "score_mean": 0.0005249283276498318
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.501289912099829
     },
     "model.layers.15.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4737138,
-      "fraction_negative": 0.41069880398837005,
-      "score_min": -0.28636783361434937,
-      "score_max": 1.2148247957229614,
-      "score_mean": 0.0006836445536464453
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021224185052389
     },
     "model.layers.15.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4704851,
-      "fraction_negative": 0.40789959647438745,
-      "score_min": -0.13135473430156708,
-      "score_max": 3.0686593055725098,
-      "score_mean": 0.0006874557002447546
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5021398997376741
     },
     "model.layers.15.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.16.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1752174,
-      "fraction_negative": 0.41775083541870117,
-      "score_min": -0.45725610852241516,
-      "score_max": 12.843750953674316,
-      "score_mean": 0.0011754304869100451
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021242680554283
     },
     "model.layers.16.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1780145,
-      "fraction_negative": 0.424419641494751,
-      "score_min": -0.8618512153625488,
-      "score_max": 20.549165725708008,
-      "score_mean": 0.0012824777513742447
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020419929034549
     },
     "model.layers.16.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1687637,
-      "fraction_negative": 0.40236401557922363,
-      "score_min": -0.23945289850234985,
-      "score_max": 0.7855443358421326,
-      "score_mean": 0.0006575248553417623
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5022137624194312
     },
     "model.layers.16.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1860617,
-      "fraction_negative": 0.4436056613922119,
-      "score_min": -2.1636857986450195,
-      "score_max": 7.370193004608154,
-      "score_mean": 0.000505815667565912
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012255059892015
     },
     "model.layers.16.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4759025,
-      "fraction_negative": 0.4125963557850231,
-      "score_min": -0.15846581757068634,
-      "score_max": 0.6910185813903809,
-      "score_mean": 0.0007456721505150199
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5020105207187805
     },
     "model.layers.16.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4722608,
-      "fraction_negative": 0.4094390869140625,
-      "score_min": -0.14016373455524445,
-      "score_max": 1.4616625308990479,
-      "score_mean": 0.0007439437322318554
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5020450655432857
     },
     "model.layers.16.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.17.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1765570,
-      "fraction_negative": 0.4209446907043457,
-      "score_min": -0.3649938404560089,
-      "score_max": 10.023512840270996,
-      "score_mean": 0.0011906051076948643
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020821758728923
     },
     "model.layers.17.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1797572,
-      "fraction_negative": 0.4285745620727539,
-      "score_min": -0.9198371767997742,
-      "score_max": 27.309803009033203,
-      "score_mean": 0.0014867383288219571
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020898723881965
     },
     "model.layers.17.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1688302,
-      "fraction_negative": 0.40252256393432617,
-      "score_min": -0.24503841996192932,
-      "score_max": 0.30526202917099,
-      "score_mean": 0.0006640508072450757
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020904391858352
     },
     "model.layers.17.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1834925,
-      "fraction_negative": 0.43748021125793457,
-      "score_min": -4.991746425628662,
-      "score_max": 5.589070796966553,
-      "score_mean": 0.0008746907114982605
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5012997266484146
     },
     "model.layers.17.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4806774,
-      "fraction_negative": 0.41673608259721234,
-      "score_min": -0.1842351108789444,
-      "score_max": 0.7223330736160278,
-      "score_mean": 0.0008399418438784778
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018740716451308
     },
     "model.layers.17.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4757624,
-      "fraction_negative": 0.41247489235617896,
-      "score_min": -0.21754726767539978,
-      "score_max": 0.753851592540741,
-      "score_mean": 0.0008623636094853282
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018638692876344
     },
     "model.layers.17.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.18.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1779452,
-      "fraction_negative": 0.4242544174194336,
-      "score_min": -0.5153720378875732,
-      "score_max": 4.781917572021484,
-      "score_mean": 0.0011815041070804
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020324468379612
     },
     "model.layers.18.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1808046,
-      "fraction_negative": 0.43107175827026367,
-      "score_min": -1.094605565071106,
-      "score_max": 22.123470306396484,
-      "score_mean": 0.001351349987089634
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5017848457642198
     },
     "model.layers.18.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1712086,
-      "fraction_negative": 0.40819311141967773,
-      "score_min": -0.21904271841049194,
-      "score_max": 0.22413299977779388,
-      "score_mean": 0.000663581071421504
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5019686671878818
     },
     "model.layers.18.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1817575,
-      "fraction_negative": 0.43334364891052246,
-      "score_min": -2.145646810531616,
-      "score_max": 5.002764701843262,
-      "score_mean": 0.0007227131281979382
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5014754040849524
     },
     "model.layers.18.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4820038,
-      "fraction_negative": 0.417886040427468,
-      "score_min": -0.16201192140579224,
-      "score_max": 0.7455002069473267,
-      "score_mean": 0.0009276668424718082
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018633024899958
     },
     "model.layers.18.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4772766,
-      "fraction_negative": 0.41378766840154474,
-      "score_min": -0.20545722544193268,
-      "score_max": 1.2674741744995117,
-      "score_mean": 0.0009726140415295959
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5019469200574291
     },
     "model.layers.18.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.19.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1787590,
-      "fraction_negative": 0.4261946678161621,
-      "score_min": -0.49054744839668274,
-      "score_max": 9.095049858093262,
-      "score_mean": 0.0011590160429477692
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5019659823569618
     },
     "model.layers.19.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1819696,
-      "fraction_negative": 0.4338493347167969,
-      "score_min": -0.4225422441959381,
-      "score_max": 27.11935806274414,
-      "score_mean": 0.0011236455757170916
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020641875057277
     },
     "model.layers.19.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1748530,
-      "fraction_negative": 0.4168820381164551,
-      "score_min": -0.263907253742218,
-      "score_max": 0.460957407951355,
-      "score_mean": 0.0005107210017740726
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5021033860371609
     },
     "model.layers.19.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1863118,
-      "fraction_negative": 0.4442019462585449,
-      "score_min": -3.108386278152466,
-      "score_max": 6.139378547668457,
-      "score_mean": 0.0007693160441704094
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5013249342276087
     },
     "model.layers.19.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4860570,
-      "fraction_negative": 0.4214000701904297,
-      "score_min": -0.1699570119380951,
-      "score_max": 0.7452163100242615,
-      "score_mean": 0.0009741536341607571
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018442998533724
     },
     "model.layers.19.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4804397,
-      "fraction_negative": 0.4165300022472035,
-      "score_min": -0.3515606224536896,
-      "score_max": 1.9997633695602417,
-      "score_mean": 0.0010279222624376416
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018876151255498
     },
     "model.layers.19.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.20.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1804117,
-      "fraction_negative": 0.43013501167297363,
-      "score_min": -0.39753809571266174,
-      "score_max": 13.649949073791504,
-      "score_mean": 0.001249375520274043
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.501849997661214
     },
     "model.layers.20.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1828592,
-      "fraction_negative": 0.4359703063964844,
-      "score_min": -0.4644416272640228,
-      "score_max": 34.77050018310547,
-      "score_mean": 0.001422025728970766
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5020528217214992
     },
     "model.layers.20.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1760369,
-      "fraction_negative": 0.4197046756744385,
-      "score_min": -0.3742116391658783,
-      "score_max": 0.46364980936050415,
-      "score_mean": 0.0006232757586985826
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5019168201196694
     },
     "model.layers.20.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1824804,
-      "fraction_negative": 0.43506717681884766,
-      "score_min": -3.792604684829712,
-      "score_max": 7.583536148071289,
-      "score_mean": 0.0011290680849924684
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5014649929072733
     },
     "model.layers.20.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4870627,
-      "fraction_negative": 0.42227198860862036,
-      "score_min": -0.22394788265228271,
-      "score_max": 0.5418694615364075,
-      "score_mean": 0.0010718144476413727
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018398847980816
     },
     "model.layers.20.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4828451,
-      "fraction_negative": 0.41861542788418854,
-      "score_min": -0.2717652916908264,
-      "score_max": 1.205053448677063,
-      "score_mean": 0.0011569116031751037
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018779199027829
     },
     "model.layers.20.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.21.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1812813,
-      "fraction_negative": 0.4322082996368408,
-      "score_min": -0.6136218905448914,
-      "score_max": 8.14400577545166,
-      "score_mean": 0.0011269552633166313
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5017996719971897
     },
     "model.layers.21.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1849392,
-      "fraction_negative": 0.4409294128417969,
-      "score_min": -0.49703240394592285,
-      "score_max": 33.40421676635742,
-      "score_mean": 0.0013400546740740538
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5019161638276668
     },
     "model.layers.21.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1781328,
-      "fraction_negative": 0.4247016906738281,
-      "score_min": -0.5049826502799988,
-      "score_max": 0.4134856164455414,
-      "score_mean": 0.0004811882972717285
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5018733855216734
     },
     "model.layers.21.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1866848,
-      "fraction_negative": 0.44509124755859375,
-      "score_min": -1.460263729095459,
-      "score_max": 4.959108829498291,
-      "score_mean": 0.0006888732314109802
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5013019640075147
     },
     "model.layers.21.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4909654,
-      "fraction_negative": 0.42565553838556464,
-      "score_min": -0.33132609724998474,
-      "score_max": 1.2295173406600952,
-      "score_mean": 0.0011289449175819755
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018473724932032
     },
     "model.layers.21.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4853729,
-      "fraction_negative": 0.4208069714632901,
-      "score_min": -0.2551966905593872,
-      "score_max": 2.5225517749786377,
-      "score_mean": 0.001221811748109758
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.501912464727288
     },
     "model.layers.21.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": 0.0,
-      "score_max": 0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.22.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1822147,
-      "fraction_negative": 0.4344336986541748,
-      "score_min": -0.45208364725112915,
-      "score_max": 8.03062629699707,
-      "score_mean": 0.0010707367910072207
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5017670363857832
     },
     "model.layers.22.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1849146,
-      "fraction_negative": 0.4408707618713379,
-      "score_min": -0.4714853763580322,
-      "score_max": 26.421165466308594,
-      "score_mean": 0.0013431510888040066
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5016913241538368
     },
     "model.layers.22.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1790521,
-      "fraction_negative": 0.4268934726715088,
-      "score_min": -0.3656701445579529,
-      "score_max": 0.4065021276473999,
-      "score_mean": 0.00044030018034391105
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5018872869795485
     },
     "model.layers.22.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1857741,
-      "fraction_negative": 0.4429199695587158,
-      "score_min": -0.476857990026474,
-      "score_max": 1.3196589946746826,
-      "score_mean": 0.0006566271767951548
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5014807140838832
     },
     "model.layers.22.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4943402,
-      "fraction_negative": 0.428581411188299,
-      "score_min": -0.5135241746902466,
-      "score_max": 3.057265520095825,
-      "score_mean": 0.001213718205690384
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5017197236986803
     },
     "model.layers.22.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4899104,
-      "fraction_negative": 0.4247408780184659,
-      "score_min": -0.510381817817688,
-      "score_max": 16.396358489990234,
-      "score_mean": 0.0013157351640984416
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5018234178351051
     },
     "model.layers.22.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "model.layers.23.attn.q_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1835949,
-      "fraction_negative": 0.43772435188293457,
-      "score_min": -0.685580849647522,
-      "score_max": 6.939857482910156,
-      "score_mean": 0.00113639363553375
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5018701637245693
     },
     "model.layers.23.attn.k_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1860950,
-      "fraction_negative": 0.44368505477905273,
-      "score_min": -0.6990757584571838,
-      "score_max": 32.324771881103516,
-      "score_mean": 0.0016387506620958447
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5018256551942052
     },
     "model.layers.23.attn.v_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1794763,
-      "fraction_negative": 0.4279048442840576,
-      "score_min": -0.3718774616718292,
-      "score_max": 0.6393659114837646,
-      "score_mean": 0.0004131340538151562
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5018924776526607
     },
     "model.layers.23.attn.o_proj": {
       "out_features": 2048,
       "in_features": 2048,
-      "n_negative_scores": 1900733,
-      "fraction_negative": 0.4531700611114502,
-      "score_min": -2.0136358737945557,
-      "score_max": 21.43988800048828,
-      "score_mean": 0.0010503705125302076
+      "n_pruned": 2097152,
+      "cancellation_pair_fraction": 0.5011032865194281
     },
     "model.layers.23.mlp.gate_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 5048299,
-      "fraction_negative": 0.4376757361672141,
-      "score_min": -1.0299869775772095,
-      "score_max": 8.221861839294434,
-      "score_mean": 0.001362867304123938
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.501676766403959
     },
     "model.layers.23.mlp.up_proj": {
       "out_features": 5632,
       "in_features": 2048,
-      "n_negative_scores": 4980421,
-      "fraction_negative": 0.43179087205366656,
-      "score_min": -0.7231497764587402,
-      "score_max": 34.79498291015625,
-      "score_mean": 0.001447318005375564
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.5016756328086815
     },
     "model.layers.23.mlp.down_proj": {
       "out_features": 2048,
       "in_features": 5632,
-      "n_negative_scores": 0,
-      "fraction_negative": 0.0,
-      "score_min": -0.0,
-      "score_max": -0.0,
-      "score_mean": 0.0
+      "n_pruned": 5767168,
+      "cancellation_pair_fraction": 0.0
     },
     "lm_head": {
       "out_features": 32000,
       "in_features": 2048,
-      "n_negative_scores": 31025617,
-      "fraction_negative": 0.47341334533691404,
-      "score_min": -13.405928611755371,
-      "score_max": 26.561086654663086,
-      "score_mean": 0.024588963016867638
+      "n_pruned": 32768000,
+      "cancellation_pair_fraction": 0.5008282405073925
     }
   }
 }

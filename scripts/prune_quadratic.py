@@ -1,29 +1,50 @@
 """
-Cancellation-aware semi-structured pruning via activation covariance quadratic form.
+Cancellation-aware semi-structured pruning via greedy minimisation of the
+joint activation-covariance quadratic form.
 
-For each output neuron j of a Linear layer with weight row w_j and input x:
+Background
+----------
+When we zero out a subset S of input channels in row j of a Linear layer, the
+expected squared reconstruction error introduced is:
 
-    E[y_j^2] = w_j^T Sigma_X w_j
+    E[error_j^2] = E[(sum_{i in S} w_{ji} x_i)^2]
+                 = w_S^T  Sigma_X[S,S]  w_S
 
-where Sigma_X = E[x x^T] is the uncentered activation second-moment matrix.
+where Sigma_X = E[x x^T] is the uncentered second-moment matrix of the layer's
+inputs, estimated from calibration data.
 
-The marginal contribution of input channel i to output neuron j is:
+This quantity is SMALLER than the sum of individual errors (sum_{i in S}
+w_{ji}^2 Sigma_X[i,i]) whenever the pruned weights carry opposite signs on
+correlated input dimensions — the "cancellation" structure identified in the
+document.  Diagonal methods (Wanda, magnitude) miss this entirely.
 
-    score(j, i) = E[y_j^2] - E[(y_j - w_{ji} x_i)^2]
-                = 2 * w_{ji} * (Sigma_X w_j)[i]  -  w_{ji}^2 * Sigma_X[i,i]
+Algorithm
+---------
+For each output neuron j we greedily build the pruned set S of k channels that
+minimises  w_S^T Sigma_X[S,S] w_S  using the marginal-error greedy rule:
 
-Key distinction from diagonal methods (Wanda, magnitude):
-  - When Sigma_X is diagonal, score(j,i) = w_{ji}^2 * Sigma_X[i,i]  (recovers Wanda)
-  - When Sigma_X has positive off-diagonal entries and w_j has mixed-sign weights
-    on correlated channels, the cross terms make score(j,i) NEGATIVE — identifying
-    cancellation groups that diagonal methods cannot detect.
+    Step 0: S = {},  v_j = 0  (v_j will track Sigma_X @ w_{S_j})
+    Step t: pick  i* = argmin_i [ w_{ji}^2 * Sigma_X[i,i]
+                                  + 2 * w_{ji} * v_j[i] ]
+            (= marginal increase in joint error from adding i to S)
+            add i* to S;  update v_j += Sigma_X[:, i*] * w_{ji*}
 
-Pruning procedure:
-  1. Collect Sigma_X = E[x x^T] per layer from calibration data (on CPU, float32)
-  2. For each layer, compute scores[j,i] = 2*W[j,i]*V[j,i] - W[j,i]^2*diag(Sigma_X)[i]
-     where V = W @ Sigma_X
-  3. Semi-structured: for each output neuron (row), zero the k lowest-scoring inputs
-     → exactly constant sparsity per neuron
+The cross-term  2 * w_{ji} * v_j[i]  goes NEGATIVE when channel i has opposite
+sign to previously selected channels that are correlated with i — so the
+algorithm actively seeks cancelling pairs, triplets, etc.
+
+At step 0 (empty S) this recovers the Wanda/diagonal criterion exactly.
+
+Vectorisation
+-------------
+The per-row greedy loop is vectorised over all output neurons simultaneously,
+so each greedy step is a single GPU kernel.  Runtime is O(k * out_f * in_f)
+per layer; for the 1B model this takes a few seconds per layer.
+
+Semi-structured sparsity
+------------------------
+k = floor(in_features * sparsity) channels are zeroed per output neuron,
+giving constant sparsity per row — a form of semi-structured sparsity.
 
 Usage
 -----
@@ -41,7 +62,6 @@ import argparse
 import json
 import math
 import os
-from collections import defaultdict
 
 import torch
 import torch.nn as nn
@@ -65,18 +85,13 @@ except Exception as e:
 
 class CovarianceStats:
     """
-    Accumulates the uncentered second moment matrix Sigma_X = E[x x^T]
-    for a single Linear layer's input, in float32 on CPU.
-
-    For input tensor X of shape (..., in_features):
-        sum_xx[i,j] = sum of x_i * x_j over all observations
-        count        = number of scalar observations (vectors)
+    Accumulates Sigma_X = E[x x^T] for a single Linear layer's input.
+    Stored in float32 on CPU to avoid GPU memory blow-up.
     """
 
     def __init__(self, in_features: int):
         self.sum_xx = torch.zeros(in_features, in_features, dtype=torch.float32)
         self.count = 0
-        self.in_features = in_features
 
     @torch.no_grad()
     def update(self, x: torch.Tensor):
@@ -86,12 +101,8 @@ class CovarianceStats:
         self.count += x.shape[0]
 
     def second_moment(self) -> torch.Tensor:
-        """E[x x^T], shape (in_features, in_features)."""
+        """Returns Sigma_X = E[x x^T], shape (in_features, in_features)."""
         return self.sum_xx / max(self.count, 1)
-
-    def diagonal(self) -> torch.Tensor:
-        """Diagonal of E[x x^T] = E[x_i^2], shape (in_features,)."""
-        return self.sum_xx.diagonal() / max(self.count, 1)
 
 
 # ---------------------------------------------------------------------------
@@ -146,67 +157,119 @@ def collect_covariance_stats(model: nn.Module, batches: list, device: torch.devi
 
 
 # ---------------------------------------------------------------------------
-# Scoring and pruning
+# Greedy cancellation-aware pruning
 # ---------------------------------------------------------------------------
 
-def compute_scores_and_prune(model: nn.Module, stats: dict, sparsity: float, device: torch.device):
+@torch.no_grad()
+def greedy_prune_layer(W: torch.Tensor, Sigma: torch.Tensor, k: int) -> torch.Tensor:
     """
-    For each Linear layer:
-      1. Compute V = W @ Sigma_X  (captures off-diagonal correlations)
-      2. Per-element score: scores[j,i] = 2*W[j,i]*V[j,i] - W[j,i]^2 * Sigma_X[i,i]
-      3. Semi-structured: for each row j, zero the k = floor(in*sparsity) lowest-scoring channels
+    Greedily select k input channels per output neuron to prune by minimising
+    the joint reconstruction error w_S^T Sigma[S,S] w_S.
 
-    Returns actual sparsity and a dict of per-layer statistics.
+    Args:
+        W:     (out_f, in_f) weight matrix, float32
+        Sigma: (in_f, in_f) second-moment matrix, float32, same device as W
+        k:     number of channels to prune per row
+
+    Returns:
+        mask: (out_f, in_f) bool tensor, True = keep, False = prune
+    """
+    out_f, in_f = W.shape
+    device = W.device
+
+    diag_Sigma = Sigma.diagonal()   # (in_f,)
+
+    # V[j, i] accumulates (Sigma @ w_{S'_j})[i] — cross-term from already-pruned channels
+    V = torch.zeros(out_f, in_f, device=device, dtype=torch.float32)
+
+    # Boolean mask: True = already selected for pruning
+    pruned = torch.zeros(out_f, in_f, device=device, dtype=torch.bool)
+
+    for _ in range(k):
+        # Marginal error of adding channel i to the prune set for each row j:
+        #   delta(j,i) = w_{ji}^2 * Sigma[i,i]  +  2 * w_{ji} * V[j,i]
+        # Lower is better (less error added by pruning this channel).
+        delta = W * W * diag_Sigma.unsqueeze(0) + 2.0 * W * V  # (out_f, in_f)
+
+        # Exclude already-pruned channels
+        delta = delta.masked_fill(pruned, float("inf"))
+
+        # Pick the channel with minimum marginal error in each row
+        chosen = delta.argmin(dim=1)   # (out_f,)
+
+        # Mark as pruned
+        pruned.scatter_(1, chosen.unsqueeze(1), True)
+
+        # Update V: V[j,:] += Sigma[chosen[j],:] * W[j, chosen[j]]
+        w_chosen = W[torch.arange(out_f, device=device), chosen]   # (out_f,)
+        V += w_chosen.unsqueeze(1) * Sigma[chosen, :]               # (out_f, in_f)
+
+    return ~pruned   # True = keep
+
+
+@torch.no_grad()
+def compute_scores_and_prune(model: nn.Module, stats: dict, sparsity: float,
+                              device: torch.device):
+    """
+    Run the greedy cancellation-aware pruning on every Linear layer.
+
+    Returns actual sparsity and per-layer diagnostic info.
     """
     total_weights = 0
     total_pruned = 0
     layer_info = {}
 
-    with torch.no_grad():
-        for name, module in tqdm(model.named_modules(), desc="Scoring and pruning"):
-            if not isinstance(module, nn.Linear) or name not in stats:
-                continue
+    for name, module in tqdm(model.named_modules(), desc="Pruning layers"):
+        if not isinstance(module, nn.Linear) or name not in stats:
+            continue
 
-            W = module.weight.data  # (out_features, in_features)
-            out_f, in_f = W.shape
-            k = int(in_f * sparsity)          # channels to prune per output neuron
-            if k == 0:
-                continue
+        W = module.weight.data     # (out_f, in_f), bfloat16 on device
+        out_f, in_f = W.shape
+        k = int(in_f * sparsity)
+        if k == 0:
+            continue
 
-            # Load Sigma_X to the model device
-            Sigma = stats[name].second_moment().to(device)  # (in_f, in_f)
-            Sigma_diag = Sigma.diagonal()                    # (in_f,)
+        W_f = W.float()
+        Sigma = stats[name].second_moment().to(device)   # (in_f, in_f)
 
-            W_f = W.float()
-            # V[j,i] = (Sigma_X @ w_j)[i]  — vectorised over all output neurons
-            V = W_f @ Sigma                                  # (out_f, in_f)
+        keep_mask = greedy_prune_layer(W_f, Sigma, k)    # (out_f, in_f) bool
 
-            # Marginal contribution of channel i to output neuron j
-            scores = 2.0 * W_f * V - W_f ** 2 * Sigma_diag.unsqueeze(0)  # (out_f, in_f)
+        # Count cancellation events: steps where the marginal error was negative
+        # (proxy: how many off-diagonal cross-terms helped, measured post-hoc)
+        # We report fraction of pruned weights that belong to a "cancelling pair":
+        # pairs (i,j) in the pruned set where w_i*w_j*Sigma[i,j] < 0
+        pruned_rows, pruned_cols = (~keep_mask).nonzero(as_tuple=True)
+        cancellation_frac = 0.0
+        if len(pruned_cols) > 0:
+            neg_cross = 0
+            # Sample per-row: check off-diagonal cross terms among pruned channels
+            for row in range(min(out_f, 64)):   # sample 64 rows for speed
+                cols = (~keep_mask[row]).nonzero(as_tuple=True)[0]
+                if len(cols) < 2:
+                    continue
+                w_sub = W_f[row, cols]                      # (k,)
+                S_sub = Sigma[cols][:, cols]                # (k, k) submatrix
+                # Off-diagonal sign-check: w_i * w_j * Sigma[i,j] < 0
+                outer_w = w_sub.unsqueeze(1) * w_sub.unsqueeze(0)  # (k,k)
+                neg_cross += int(((outer_w * S_sub) < 0).triu(diagonal=1).sum().item())
+            total_pairs = min(out_f, 64) * k * (k - 1) // 2
+            cancellation_frac = neg_cross / max(total_pairs, 1)
 
-            # Semi-structured: prune k lowest-scoring inputs per output neuron
-            _, prune_idx = scores.topk(k, dim=1, largest=False)
-            mask = torch.ones(out_f, in_f, dtype=torch.bool, device=device)
-            mask.scatter_(1, prune_idx, False)
+        module.weight.data[~keep_mask] = 0.0
 
-            module.weight.data[~mask] = 0.0
+        n_pruned = (~keep_mask).sum().item()
+        total_weights += out_f * in_f
+        total_pruned += n_pruned
+        layer_info[name] = {
+            "out_features": out_f,
+            "in_features": in_f,
+            "n_pruned": n_pruned,
+            "cancellation_pair_fraction": cancellation_frac,
+        }
 
-            # Statistics
-            n_neg = (scores < 0).sum().item()
-            total_weights += out_f * in_f
-            total_pruned += (~mask).sum().item()
-            layer_info[name] = {
-                "out_features": out_f,
-                "in_features": in_f,
-                "n_negative_scores": n_neg,
-                "fraction_negative": n_neg / (out_f * in_f),
-                "score_min": scores.min().item(),
-                "score_max": scores.max().item(),
-                "score_mean": scores.mean().item(),
-            }
-
-            # Free GPU memory
-            del Sigma, V, scores, mask, W_f
+        del Sigma, W_f, keep_mask
+        if device.type == "cuda":
+            torch.cuda.empty_cache()
 
     actual_sparsity = total_pruned / max(total_weights, 1)
     return actual_sparsity, layer_info
@@ -272,33 +335,30 @@ def main():
         ppl_before = evaluate_ppl(model, tokenizer, device, args.seq_len)
         print(f"Perplexity before pruning: {ppl_before:.4f}")
 
-    # --- calibration: accumulate Sigma_X per layer on CPU ---
+    # --- calibration ---
     print(f"\nBuilding calibration batches "
           f"({args.n_calib_batches} × {args.batch_size} × {args.seq_len}) ...")
     batches = build_calib_batches(tokenizer, args.n_calib_batches, args.batch_size, args.seq_len)
     stats = collect_covariance_stats(model, batches, device)
 
-    total_sigma_mb = sum(
-        s.sum_xx.numel() * 4 / 1e6 for s in stats.values()
-    )
-    print(f"  Sigma_X matrices accumulated: {len(stats)} layers, "
+    total_sigma_mb = sum(s.sum_xx.numel() * 4 / 1e6 for s in stats.values())
+    print(f"  Sigma_X accumulated: {len(stats)} layers, "
           f"{total_sigma_mb:.0f} MB total (CPU float32)")
 
-    # --- score and prune ---
-    print(f"\nPruning {args.sparsity * 100:.1f}% of input channels per neuron "
-          f"(semi-structured, cancellation-aware) ...")
+    # --- prune ---
+    print(f"\nGreedy cancellation-aware pruning at {args.sparsity * 100:.1f}% sparsity ...")
+    print("  (semi-structured: constant k channels zeroed per output neuron)")
     actual_sparsity, layer_info = compute_scores_and_prune(model, stats, args.sparsity, device)
     print(f"Actual sparsity: {actual_sparsity * 100:.2f}%")
 
-    # Print layers with the most negative-score channels (cancellation sites)
-    top_cancel = sorted(layer_info.items(), key=lambda kv: -kv[1]["fraction_negative"])[:10]
-    print(f"\nTop-10 layers by cancellation fraction (negative scores):")
-    header = f"  {'Layer':<55}  {'Neg%':>6}  {'ScoreMin':>10}"
-    print(header)
-    print("  " + "-" * (len(header) - 2))
-    for name, info in top_cancel:
-        print(f"  {name:<55}  {info['fraction_negative'] * 100:>5.1f}%  "
-              f"{info['score_min']:>10.3e}")
+    # Report cancellation hotspots
+    top = sorted(layer_info.items(),
+                 key=lambda kv: -kv[1]["cancellation_pair_fraction"])[:10]
+    print(f"\nTop-10 layers by cancellation pair fraction:")
+    print(f"  {'Layer':<55}  {'Cancel%':>8}")
+    print("  " + "-" * 65)
+    for lname, info in top:
+        print(f"  {lname:<55}  {info['cancellation_pair_fraction'] * 100:>7.1f}%")
 
     ppl_after = None
     if args.eval_ppl:
@@ -312,11 +372,14 @@ def main():
         model.save_pretrained(args.output_path)
         tokenizer.save_pretrained(args.output_path)
         summary = {
-            "method": "cancellation_aware_quadratic",
+            "method": "cancellation_aware_greedy_quadratic",
             "sparsity_target": args.sparsity,
             "sparsity_actual": actual_sparsity,
-            "sparsity_structure": "semi-structured (constant per output neuron)",
-            "scoring": "quadratic form: 2*w_ji*(Sigma_X @ w_j)[i] - w_ji^2 * Sigma_X[i,i]",
+            "sparsity_structure": "semi-structured (constant k per output neuron)",
+            "scoring": (
+                "greedy min of w_S^T Sigma_X[S,S] w_S; "
+                "marginal step: w_{ji}^2*Sigma[i,i] + 2*w_{ji}*(Sigma@w_{S'_j})[i]"
+            ),
             "n_calib_batches": args.n_calib_batches,
             "ppl_before": ppl_before,
             "ppl_after": ppl_after,
