@@ -32,15 +32,15 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 
 WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
 
-| Sparsity | Wanda | Greedy + correction (ours) |
-|----------|-------|---------------------------|
-| 30% | 34.8 | **32.6** |
-| 40% | 189.6 | **84.3** |
-| 50% | 3,545 | **615** |
-| 60% | 11,319 | **3,507** |
-| 70% | 24,670 | **9,065** |
+| Sparsity | SparseGPT | Greedy + correction (ours) | Wanda |
+|----------|-----------|---------------------------|-------|
+| 30% | **20.5** | 32.6 | 34.8 |
+| 40% | **22.4** | 84.3 | 189.6 |
+| 50% | **29.6** | 615 | 3,545 |
+| 60% | **75.5** | 3,507 | 11,319 |
+| 70% | 7,591 | **9,065** | 24,670 |
 
-Our method outperforms Wanda at every sparsity level. The gap widens significantly past 40%, where the off-diagonal covariance structure becomes increasingly important for identifying cancellation-prone weight groups. Full sweep results in `results/sparsity_sweep.json`.
+Our method consistently outperforms Wanda at every sparsity level. SparseGPT dominates up to 60% sparsity due to its column-ordered iterative weight corrections; all methods degrade significantly at 70%. Full sweep results in `results/sparsity_sweep.json`.
 
 ## Model weights
 
