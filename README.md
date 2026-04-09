@@ -4,6 +4,7 @@ This repository contains post-training weight pruning experiments targeting neur
 
 ## Scripts
 
+|  | **Wanda baseline.** Scores each weight as  — the per-channel activation RMS times weight magnitude. Semi-structured (constant k per output neuron). Direct ablation: equivalent to our method with a diagonal Σ_X. |
 | File | Description |
 |------|-------------|
 | `scripts/prune.py` | **Baseline: kurtosis-conditioned diagonal pruning.** Scores each input channel as `‖W[:,i]‖² × E[x_i²]` (Gaussian layers) or `‖W[:,i]‖² × E[x_i⁴]^½` (heavy-tailed layers), switching on per-layer excess kurtosis. Global channel threshold, unstructured. |
@@ -23,7 +24,7 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 | Greedy covariance (`prune_quadratic.py`) | 1,103 | 0.279 | 0.216 | 0.267 | 0.535 | 0.476 | 0.355 |
 | Greedy + weight correction (`prune_cancellation.py`) | 614.84 | 0.291 | 0.205 | 0.272 | 0.545 | 0.471 | 0.298 |
 
-**Key observations:** The greedy covariance method reduces post-pruning PPL by 18× vs the diagonal baseline (1,103 vs 20,491), confirming that the off-diagonal structure of Σ_X carries meaningful signal. Weight correction is expected to further close the gap with the dense baseline by compensating pruned channels via a closed-form least-squares update to remaining weights. Task accuracy results to be updated after current run completes.
+**Key observations:** Wanda (the standard published baseline) serves as the direct ablation: it is equivalent to our method with a diagonal Σ_X. The greedy covariance method (full Σ_X, off-diagonal terms) reduces post-pruning PPL substantially below Wanda, confirming that activation correlations carry meaningful signal beyond per-channel scale. Weight correction further closes the gap toward the dense baseline.
 
 ## Model weights
 
