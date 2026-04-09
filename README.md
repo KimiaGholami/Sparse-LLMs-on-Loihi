@@ -28,6 +28,20 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 
 **Key observations:** SparseGPT (Frantar & Alistarh, 2023) is the strongest single-shot baseline at 50% sparsity, achieving PPL 29.6 — close to the dense model. Our cancellation-aware method (615 PPL) substantially outperforms Wanda (3,545 PPL) — a **5.8× improvement** — by exploiting off-diagonal activation covariance structure, but lags behind SparseGPT, which applies iterative OBS weight corrections. Task accuracy results for SparseGPT are pending; accuracy gains across all methods are modest without fine-tuning recovery, which is expected at 50% sparsity.
 
+## Sparsity sweep (PPL vs sparsity level)
+
+WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
+
+| Sparsity | Wanda | Greedy + correction (ours) |
+|----------|-------|---------------------------|
+| 30% | 34.8 | **32.6** |
+| 40% | 189.6 | **84.3** |
+| 50% | 3,545 | **615** |
+| 60% | 11,319 | **3,507** |
+| 70% | 24,670 | **9,065** |
+
+Our method outperforms Wanda at every sparsity level. The gap widens significantly past 40%, where the off-diagonal covariance structure becomes increasingly important for identifying cancellation-prone weight groups. Full sweep results in `results/sparsity_sweep.json`.
+
 ## Model weights
 
 Dense and pruned model weights are available on the Hugging Face Hub under [`ikimyaii`](https://huggingface.co/ikimyaii).
