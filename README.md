@@ -21,7 +21,7 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 | `transformer-1B-dense-baseline-continued` | — | 0.631 | 0.289 | 0.373 | 0.687 | 0.517 | **0.484** |
 | Diagonal pruning (`prune.py`) | 20,491 | 0.257 | 0.240 | 0.257 | 0.521 | 0.500 | 0.355 |
 | Greedy covariance (`prune_quadratic.py`) | 1,103 | 0.279 | 0.216 | 0.267 | 0.535 | 0.476 | 0.355 |
-| Greedy + weight correction (`prune_cancellation.py`) | TBD | — | — | — | — | — | — |
+| Greedy + weight correction (`prune_cancellation.py`) | 614.84 | — | — | — | — | — | — |
 
 **Key observations:** The greedy covariance method reduces post-pruning PPL by 18× vs the diagonal baseline (1,103 vs 20,491), confirming that the off-diagonal structure of Σ_X carries meaningful signal. Weight correction is expected to further close the gap with the dense baseline by compensating pruned channels via a closed-form least-squares update to remaining weights. Task accuracy results to be updated after current run completes.
 
