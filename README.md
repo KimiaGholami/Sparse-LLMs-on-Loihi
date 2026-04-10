@@ -24,9 +24,9 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 | Wanda (`prune_wanda.py`) | 3,545 | 0.271 | 0.228 | 0.260 | 0.523 | 0.493 | 0.296 |
 | Greedy covariance (`prune_quadratic.py`) | 1,103 | 0.279 | 0.216 | 0.267 | 0.535 | 0.476 | 0.355 |
 | Greedy + weight correction (`prune_cancellation.py`) | 615 | 0.291 | 0.205 | 0.272 | 0.545 | 0.471 | 0.298 |
-| SparseGPT (`prune_sparsegpt.py`) | **29.6** | — | — | — | — | — | — |
+| SparseGPT (`prune_sparsegpt.py`) | **29.6** | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | **0.492** |
 
-**Key observations:** SparseGPT (Frantar & Alistarh, 2023) is the strongest single-shot baseline at 50% sparsity, achieving PPL 29.6 — close to the dense model. Our cancellation-aware method (615 PPL) substantially outperforms Wanda (3,545 PPL) — a **5.8× improvement** — by exploiting off-diagonal activation covariance structure, but lags behind SparseGPT, which applies iterative OBS weight corrections. Task accuracy results for SparseGPT are pending; accuracy gains across all methods are modest without fine-tuning recovery, which is expected at 50% sparsity.
+**Key observations:** SparseGPT (Frantar & Alistarh, 2023) achieves PPL 29.6 and avg accuracy 0.492 at 50% sparsity — nearly matching the dense model (0.472–0.484). Our cancellation-aware method outperforms Wanda by **5.8× in PPL** (615 vs 3,545) by exploiting off-diagonal activation covariance, but lags behind SparseGPT, which applies iterative OBS weight corrections column-by-column. Task accuracy degrades modestly for all methods without fine-tuning recovery.
 
 ## Sparsity sweep (PPL vs sparsity level)
 
@@ -39,8 +39,9 @@ WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
 | 50% | **29.6** | 615 | 3,545 |
 | 60% | **75.5** | 3,507 | 11,319 |
 | 70% | 7,591 | **9,065** | 24,670 |
+| 80% | 25,929 | 17,077 | **11,076** |
 
-Our method consistently outperforms Wanda at every sparsity level. SparseGPT dominates up to 60% sparsity due to its column-ordered iterative weight corrections; all methods degrade significantly at 70%. Full sweep results in `results/sparsity_sweep.json`.
+Our method consistently outperforms Wanda up to 70% sparsity. SparseGPT dominates up to 60% due to iterative OBS corrections; all methods collapse past 70%. Full sweep results in `results/sparsity_sweep.json`.
 
 ## Model weights
 
