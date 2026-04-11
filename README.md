@@ -11,6 +11,7 @@ This repository contains post-training weight pruning experiments targeting neur
 | `scripts/prune_cancellation.py` | **Greedy covariance pruning + closed-form weight correction.** Same greedy selection as above, followed by a least-squares update to the remaining weights: `Δw[K] = Σ_X[K,K]⁻¹ Σ_X[K,S] w[S]`. Rows sharing the same prune mask are batched for efficiency. |
 | `scripts/prune_sparsegpt.py` | **SparseGPT baseline** (Frantar & Alistarh, 2023). OBS saliency scoring `W[i,j]² / H_inv[j,j]` with column-ordered weight corrections applied in blocks of 128. The current strongest published single-shot pruning method. |
 | `scripts/prune_hybrid.py` | **Hybrid: cancellation-aware selection + SparseGPT OBS correction.** Replaces SparseGPT's diagonal scoring with our full-covariance greedy selection, then applies column-ordered OBS corrections. Tests whether better selection adds value on top of OBS corrections. |
+| `scripts/prune_interleaved.py` | **Interleaved: block-level cancellation selection + OBS correction.** Fixes the column-ordering mismatch in the hybrid by interleaving selection and correction block-by-block. Within each block, cancellation-aware greedy selection runs on the current (already-corrected) weights; OBS corrections are applied immediately after each block. |
 | `scripts/sparsity_sweep.py` | Runs Wanda and cancellation pruning across sparsity levels (30–80%) and saves PPL results to `results/sparsity_sweep.json`. |
 | `scripts/benchmark_fla.py` | Runs `lm-evaluation-harness` on a model with FLA model-type registration (required for the `transformer` architecture). Evaluates HellaSwag, ARC-Easy, ARC-Challenge, WinoGrande, PIQA, LAMBADA. |
 
@@ -27,8 +28,11 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 | Greedy + weight correction (`prune_cancellation.py`) | 615 | 0.291 | 0.205 | 0.272 | 0.545 | 0.471 | 0.298 |
 | SparseGPT (`prune_sparsegpt.py`) | **29.6** | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | **0.492** |
 | Hybrid: cancellation selection + OBS correction (`prune_hybrid.py`) | 958 | — | — | — | — | — | — |
+| Interleaved: block-level cancellation + OBS (`prune_interleaved.py`) | 856 | — | — | — | — | — | — |
 
-**Key observations:** SparseGPT achieves PPL 29.6 and avg accuracy 0.492 at 50% sparsity — nearly matching the dense baseline. Our cancellation-aware method outperforms Wanda by **5.8× in PPL** (615 vs 3,545) by exploiting off-diagonal activation covariance structure. The hybrid method (cancellation selection + OBS correction) yields PPL 958, worse than either component alone — a negative result showing that the two steps are not independently composable: OBS correction assumes column-ordered pruning decisions, while our greedy selection is globally ordered, causing the corrections to misalign. A proper integration requires interleaving selection and correction at every column step.
+**Key observations:** SparseGPT achieves PPL 29.6 and avg accuracy 0.492 at 50% sparsity — nearly matching the dense baseline. Our cancellation-aware method outperforms Wanda by **5.8× in PPL** (615 vs 3,545) by exploiting off-diagonal activation covariance structure.
+
+The combination experiments reveal a fundamental incompatibility: **each correction method works best with its own scoring criterion.** OBS correction is derived from the same objective as SparseGPT's `w²/H_inv[j,j]` score; mixing in our cancellation scores degrades performance (hybrid: 958, interleaved: 856 — both worse than plain SparseGPT). Conversely, our batch Cholesky correction works well with our greedy scores (615). The correct path forward is deriving a cancellation-aware score *under the OBS objective* — the marginal increase in `w_S^T [H_inv[S,S]]⁻¹ w_S` — which would make selection and correction coherent within the same framework.
 
 ## Sparsity sweep (PPL vs sparsity level)
 
