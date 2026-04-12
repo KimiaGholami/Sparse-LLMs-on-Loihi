@@ -30,7 +30,7 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 | SparseGPT (`prune_sparsegpt.py`) | **29.6** | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | **0.492** |
 | Hybrid: cancellation selection + OBS correction (`prune_hybrid.py`) | 958 | — | — | — | — | — | — |
 | Interleaved: block-level cancellation + OBS (`prune_interleaved.py`) | 856 | — | — | — | — | — | — |
-| **OBS-cancel (`prune_obs_cancel.py`)** | **24.1** | — | — | — | — | — | — |
+| **OBS-cancel (`prune_obs_cancel.py`)** | **24.1** | 0.569 | 0.248 | 0.345 | 0.665 | 0.517 | **0.469** |
 
 **Key observations:** Our proposed **OBS-cancel** method achieves PPL **24.1** at 50% sparsity, outperforming SparseGPT (29.6) by **1.23×** with identical OBS corrections — the gain comes entirely from better prune mask selection.
 
@@ -40,16 +40,16 @@ The combination experiments reveal why naive mixtures fail: **each correction me
 
 WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
 
-| Sparsity | SparseGPT | Greedy + correction (ours) | Wanda |
-|----------|-----------|---------------------------|-------|
-| 30% | **20.5** | 32.6 | 34.8 |
-| 40% | **22.4** | 84.3 | 189.6 |
-| 50% | **29.6** | 615 | 3,545 |
-| 60% | **75.5** | 3,507 | 11,319 |
-| 70% | 7,591 | **9,065** | 24,670 |
-| 80% | 25,929 | 17,077 | **11,076** |
+| Sparsity | OBS-cancel (ours) | SparseGPT | Greedy + correction | Wanda |
+|----------|------------------|-----------|---------------------|-------|
+| 30% | **20.2** | 20.5 | 32.6 | 34.8 |
+| 40% | **21.2** | 22.4 | 84.3 | 189.6 |
+| 50% | **24.1** | 29.6 | 615 | 3,545 |
+| 60% | **47.0** | 75.5 | 3,507 | 11,319 |
+| 70% | — | 7,591 | 9,065 | 24,670 |
+| 80% | — | 25,929 | 17,077 | 11,076 |
 
-Our method consistently outperforms Wanda up to 70% sparsity. SparseGPT dominates up to 60% due to iterative OBS corrections; all methods collapse past 70%. Full sweep results in `results/sparsity_sweep.json`.
+OBS-cancel outperforms SparseGPT at every sparsity level; the margin grows with sparsity (1.02× at 30% → 1.60× at 60%), consistent with cancellation effects becoming more important as more weights are removed. 70% and 80% results pending. Full sweep results in `results/sparsity_sweep.json`.
 
 ## Model weights
 
