@@ -12,6 +12,7 @@ This repository contains post-training weight pruning experiments targeting neur
 | `scripts/prune_sparsegpt.py` | **SparseGPT baseline** (Frantar & Alistarh, 2023). OBS saliency scoring `W[i,j]² / H_inv[j,j]` with column-ordered weight corrections applied in blocks of 128. The current strongest published single-shot pruning method. |
 | `scripts/prune_hybrid.py` | **Hybrid: cancellation-aware selection + SparseGPT OBS correction.** Replaces SparseGPT's diagonal scoring with our full-covariance greedy selection, then applies column-ordered OBS corrections. Tests whether better selection adds value on top of OBS corrections. |
 | `scripts/prune_interleaved.py` | **Interleaved: block-level cancellation selection + OBS correction.** Fixes the column-ordering mismatch in the hybrid by interleaving selection and correction block-by-block. Within each block, cancellation-aware greedy selection runs on the current (already-corrected) weights; OBS corrections are applied immediately after each block. |
+| `scripts/prune_obs_cancel.py` | **OBS-cancel (proposed method).** Greedy selection via OBS residual updates: score `r_j²/d_j` where `r_j` and `d_j` are residual weight and diagonal evolved by Schur complement rank-1 updates after each greedy step. At step 0 recovers SparseGPT's score exactly; subsequent steps capture cross-weight cancellation within the OBS objective. Followed by column-ordered OBS corrections identical to SparseGPT. |
 | `scripts/sparsity_sweep.py` | Runs Wanda and cancellation pruning across sparsity levels (30–80%) and saves PPL results to `results/sparsity_sweep.json`. |
 | `scripts/benchmark_fla.py` | Runs `lm-evaluation-harness` on a model with FLA model-type registration (required for the `transformer` architecture). Evaluates HellaSwag, ARC-Easy, ARC-Challenge, WinoGrande, PIQA, LAMBADA. |
 
@@ -29,10 +30,11 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 | SparseGPT (`prune_sparsegpt.py`) | **29.6** | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | **0.492** |
 | Hybrid: cancellation selection + OBS correction (`prune_hybrid.py`) | 958 | — | — | — | — | — | — |
 | Interleaved: block-level cancellation + OBS (`prune_interleaved.py`) | 856 | — | — | — | — | — | — |
+| **OBS-cancel (`prune_obs_cancel.py`)** | **24.1** | — | — | — | — | — | — |
 
-**Key observations:** SparseGPT achieves PPL 29.6 and avg accuracy 0.492 at 50% sparsity — nearly matching the dense baseline. Our cancellation-aware method outperforms Wanda by **5.8× in PPL** (615 vs 3,545) by exploiting off-diagonal activation covariance structure.
+**Key observations:** Our proposed **OBS-cancel** method achieves PPL **24.1** at 50% sparsity, outperforming SparseGPT (29.6) by **1.23×** with identical OBS corrections — the gain comes entirely from better prune mask selection.
 
-The combination experiments reveal a fundamental incompatibility: **each correction method works best with its own scoring criterion.** OBS correction is derived from the same objective as SparseGPT's `w²/H_inv[j,j]` score; mixing in our cancellation scores degrades performance (hybrid: 958, interleaved: 856 — both worse than plain SparseGPT). Conversely, our batch Cholesky correction works well with our greedy scores (615). The correct path forward is deriving a cancellation-aware score *under the OBS objective* — the marginal increase in `w_S^T [H_inv[S,S]]⁻¹ w_S` — which would make selection and correction coherent within the same framework.
+The combination experiments reveal why naive mixtures fail: **each correction method works best with its own scoring criterion.** OBS correction is derived from the same objective as SparseGPT's `w²/H_inv[j,j]` score; mixing in our Σ_X-based cancellation scores degrades performance (hybrid: 958, interleaved: 856). The fix is to derive the cancellation-aware score *within the OBS objective*: the greedy marginal `δ(j|S') = r_j²/d_j` where `r_j` and `d_j` evolve via Schur complement rank-1 updates. At step 0 this recovers SparseGPT exactly; subsequent steps capture cross-weight cancellation that SparseGPT's diagonal score misses.
 
 ## Sparsity sweep (PPL vs sparsity level)
 
