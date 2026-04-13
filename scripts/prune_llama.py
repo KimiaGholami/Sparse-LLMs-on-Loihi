@@ -39,7 +39,7 @@ from prune_sparsegpt import (
     CovarianceStats, build_calib_batches, collect_covariance_stats,
     evaluate_ppl, sparsegpt_prune_layer,
 )
-from prune_obs_cancel import obs_cancel_prune_layer
+from prune_obs_cancel import obs_cancel_prune_layer, obs_cancel_block_prune_layer
 
 
 # ---------------------------------------------------------------------------
@@ -50,7 +50,13 @@ from prune_obs_cancel import obs_cancel_prune_layer
 def prune_model(model, stats, sparsity, method, device, damp=0.01, block_size=128):
     total_w, total_p = 0, 0
     layer_info = {}
-    label = "SparseGPT" if method == "sparsegpt" else "OBS-cancel"
+    _labels = {"sparsegpt": "SparseGPT", "obs_cancel": "OBS-cancel",
+               "obs_cancel_block": "OBS-cancel-block"}
+    label = _labels.get(method, method)
+    _fns   = {"sparsegpt": sparsegpt_prune_layer,
+               "obs_cancel": obs_cancel_prune_layer,
+               "obs_cancel_block": obs_cancel_block_prune_layer}
+    prune_fn = _fns[method]
 
     for name, module in tqdm(model.named_modules(), desc=f"{label} pruning"):
         if not isinstance(module, nn.Linear) or name not in stats:
@@ -58,20 +64,15 @@ def prune_model(model, stats, sparsity, method, device, damp=0.01, block_size=12
 
         W = module.weight.data
         out_f, in_f = W.shape
-        k = int(in_f * sparsity)
-        if k == 0:
+        if int(in_f * sparsity) == 0:
             continue
 
         # Move Sigma to the same device as this layer's weights
         layer_device = W.device
         Sigma = stats[name].second_moment().to(layer_device)
 
-        if method == "sparsegpt":
-            W_corr = sparsegpt_prune_layer(W.float(), Sigma, sparsity,
-                                            damp=damp, block_size=block_size)
-        else:
-            W_corr = obs_cancel_prune_layer(W.float(), Sigma, sparsity,
-                                             damp=damp, block_size=block_size)
+        W_corr = prune_fn(W.float(), Sigma, sparsity,
+                          damp=damp, block_size=block_size)
 
         module.weight.data.copy_(W_corr.to(W.dtype))
 
@@ -94,7 +95,9 @@ def prune_model(model, stats, sparsity, method, device, damp=0.01, block_size=12
 
 def parse_args():
     p = argparse.ArgumentParser()
-    p.add_argument("--method", choices=["sparsegpt", "obs_cancel"], required=True)
+    p.add_argument("--method",
+                   choices=["sparsegpt", "obs_cancel", "obs_cancel_block"],
+                   required=True)
     p.add_argument("--model_path", type=str, required=True)
     p.add_argument("--sparsity", type=float, default=0.5)
     p.add_argument("--n_calib_batches", type=int, default=32)

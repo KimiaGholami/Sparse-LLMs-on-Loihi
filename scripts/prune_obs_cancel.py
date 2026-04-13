@@ -286,28 +286,156 @@ def obs_cancel_prune_layer(W: torch.Tensor, Sigma: torch.Tensor,
     return W_out
 
 
+@torch.no_grad()
+def obs_cancel_block_prune_layer(W: torch.Tensor, Sigma: torch.Tensor,
+                                  sparsity: float, damp: float = 0.01,
+                                  block_size: int = 128) -> torch.Tensor:
+    """
+    Block-level OBS-cancel: interleaved greedy selection + OBS correction.
+
+    Fixes two problems in global OBS-cancel that caused underperformance
+    on large models (LLaMA-7B):
+
+    1. Ordering mismatch: global greedy selects k weights across all columns
+       in arbitrary order, then the OBS correction sweeps left-to-right.  The
+       correction assumes column-ordered pruning; the global mask is not.
+
+    2. Numerical drift: k=2000-5500 rank-1 Schur complement updates in float32
+       cause D to go negative and distort scores for remaining weights.
+
+    Fix: for each 128-column block b, run k_block = round(blk_size * sparsity)
+    greedy OBS-cancel steps restricted to that block's submatrix, then
+    immediately apply OBS corrections for that block (same as SparseGPT).
+    Both phases operate on the same H_inv[b,b] submatrix → consistent.
+    k_block ≤ 64 steps at 50% sparsity → negligible numerical drift.
+
+    Relationship to other methods:
+      k_block = 1 per block → reduces to SparseGPT (picks the weight with the
+        highest OBS score w²/H_inv[j,j] in each block column by column, which
+        is exactly what SparseGPT does).
+      k_block = blk_size * sparsity (this method) → full within-block
+        cancellation-aware greedy selection.
+
+    Args:
+        W:          (out_f, in_f) float32
+        Sigma:      (in_f, in_f) second-moment matrix, float32
+        sparsity:   fraction of weights to zero per row
+        damp:       Tikhonov regularisation as fraction of mean diagonal
+        block_size: columns per block (default 128, same as SparseGPT)
+
+    Returns corrected W (same shape, pruned entries zeroed).
+    """
+    out_f, in_f = W.shape
+    device = W.device
+    if int(in_f * sparsity) == 0:
+        return W.clone()
+
+    rows = torch.arange(out_f, device=device)
+
+    # Regularised H_inv = inv(Sigma + damp * I)
+    H = Sigma.float().clone()
+    H.diagonal().add_(damp * H.diagonal().mean().clamp(min=1e-8))
+    try:
+        L = torch.linalg.cholesky(H)
+        H_inv = torch.cholesky_inverse(L)
+    except Exception:
+        H_inv = torch.linalg.inv(H)
+
+    W_out = W.clone().float()
+    pruned = torch.zeros(out_f, in_f, device=device, dtype=torch.bool)
+
+    for b_start in range(0, in_f, block_size):
+        b_end   = min(b_start + block_size, in_f)
+        blk_sz  = b_end - b_start
+        k_block = round(blk_sz * sparsity)
+        if k_block == 0:
+            continue
+
+        # Weights already corrected by all previous blocks
+        W_blk       = W_out[:, b_start:b_end].clone()          # (out_f, blk_sz)
+        H_inv_blk   = H_inv[b_start:b_end, b_start:b_end]      # (blk_sz, blk_sz)
+        H_inv_blk64 = H_inv_blk.double()
+
+        # -----------------------------------------------------------------
+        # Greedy selection within block (float64 residuals, blk_sz columns)
+        # -----------------------------------------------------------------
+        R_blk    = W_blk.clone().double()
+        D_blk    = H_inv_blk64.diagonal().unsqueeze(0).expand(out_f, -1).clone()
+        pruned_b = torch.zeros(out_f, blk_sz, device=device, dtype=torch.bool)
+
+        for _ in range(k_block):
+            score = R_blk * R_blk / D_blk.clamp(min=1e-8)
+            score = score.masked_fill(pruned_b, float("inf"))
+            chosen = score.argmin(dim=1)                         # (out_f,) within-block
+
+            pruned_b.scatter_(1, chosen.unsqueeze(1), True)
+
+            r_c      = R_blk[rows, chosen]                      # (out_f,)
+            d_c      = D_blk[rows, chosen].clamp(min=1e-8)      # (out_f,)
+            H_inv_c  = H_inv_blk64[chosen, :]                   # (out_f, blk_sz)
+
+            R_blk -= (r_c / d_c).unsqueeze(1) * H_inv_c
+            D_blk -= H_inv_c * H_inv_c / d_c.unsqueeze(1)
+            D_blk.clamp_(min=1e-8)
+
+        pruned[:, b_start:b_end] = pruned_b
+
+        # -----------------------------------------------------------------
+        # OBS correction for this block + propagation (SparseGPT style)
+        # -----------------------------------------------------------------
+        Err = torch.zeros(out_f, blk_sz, device=device)
+
+        for i in range(blk_sz):
+            h_ii  = H_inv_blk[i, i].clamp(min=1e-8)
+            w_col = W_blk[:, i].clone()
+
+            err = w_col.clone()
+            err[~pruned_b[:, i]] = 0.0
+
+            Err[:, i]  = err / h_ii
+            W_blk[:, i][pruned_b[:, i]] = 0.0
+
+            if i + 1 < blk_sz:
+                W_blk[:, i + 1:] -= (err / h_ii).unsqueeze(1) * H_inv_blk[i, i + 1:]
+
+        W_out[:, b_start:b_end] = W_blk
+        if b_end < in_f:
+            W_out[:, b_end:] -= Err @ H_inv[b_start:b_end, b_end:]
+
+    W_out[pruned] = 0.0
+    return W_out
+
+
 # ---------------------------------------------------------------------------
 # Full model pruning
 # ---------------------------------------------------------------------------
 
 @torch.no_grad()
-def prune_model(model, stats, sparsity, device, damp=0.01, block_size=128):
+def prune_model(model, stats, sparsity, device, method="obs_cancel",
+                damp=0.01, block_size=128):
+    """
+    method: "obs_cancel"       — global greedy (original, works well on 1B)
+            "obs_cancel_block" — block-level greedy (consistent selection +
+                                 correction; fixes large-model performance)
+    """
+    _fn = (obs_cancel_block_prune_layer if method == "obs_cancel_block"
+           else obs_cancel_prune_layer)
+    label = "OBS-cancel-block" if method == "obs_cancel_block" else "OBS-cancel"
+
     total_w, total_p = 0, 0
     layer_info = {}
 
-    for name, module in tqdm(model.named_modules(), desc="OBS-cancel pruning"):
+    for name, module in tqdm(model.named_modules(), desc=f"{label} pruning"):
         if not isinstance(module, nn.Linear) or name not in stats:
             continue
 
         W = module.weight.data
         out_f, in_f = W.shape
-        k = int(in_f * sparsity)
-        if k == 0:
+        if int(in_f * sparsity) == 0:
             continue
 
         Sigma = stats[name].second_moment().to(device)
-        W_corr = obs_cancel_prune_layer(W.float(), Sigma, sparsity,
-                                         damp=damp, block_size=block_size)
+        W_corr = _fn(W.float(), Sigma, sparsity, damp=damp, block_size=block_size)
         module.weight.data.copy_(W_corr.to(W.dtype))
 
         n_pruned = (W_corr == 0).sum().item()
@@ -349,6 +477,10 @@ def evaluate_ppl(model, tokenizer, device, seq_len=512, n_tokens=500_000):
 def parse_args():
     p = argparse.ArgumentParser()
     p.add_argument("--model_path", type=str, default="exp/transformer-1B-dense-baseline")
+    p.add_argument("--method", choices=["obs_cancel", "obs_cancel_block"],
+                   default="obs_cancel",
+                   help="obs_cancel: global greedy (original); "
+                        "obs_cancel_block: block-level greedy (recommended for large models)")
     p.add_argument("--sparsity", type=float, default=0.5)
     p.add_argument("--n_calib_batches", type=int, default=64)
     p.add_argument("--batch_size", type=int, default=4)
@@ -383,11 +515,16 @@ def main():
                                   args.batch_size, args.seq_len)
     stats = collect_covariance_stats(model, batches, device)
 
-    print(f"\nOBS-cancel pruning at {args.sparsity * 100:.0f}% sparsity ...")
-    print(f"  Selection: greedy OBS residual (Schur complement rank-1 updates)")
+    label = "OBS-cancel-block" if args.method == "obs_cancel_block" else "OBS-cancel"
+    print(f"\n{label} pruning at {args.sparsity * 100:.0f}% sparsity ...")
+    if args.method == "obs_cancel_block":
+        print(f"  Selection: greedy OBS residual within each {args.block_size}-col block")
+    else:
+        print(f"  Selection: greedy OBS residual (global, float64)")
     print(f"  Correction: column-ordered OBS in blocks of {args.block_size}")
     actual_sparsity, layer_info = prune_model(
-        model, stats, args.sparsity, device, damp=args.damp, block_size=args.block_size
+        model, stats, args.sparsity, device,
+        method=args.method, damp=args.damp, block_size=args.block_size,
     )
     print(f"Actual sparsity: {actual_sparsity * 100:.2f}%")
 
@@ -400,11 +537,16 @@ def main():
         os.makedirs(args.output_path, exist_ok=True)
         model.save_pretrained(args.output_path)
         tokenizer.save_pretrained(args.output_path)
+        scoring_desc = (
+            "greedy OBS residual within each block: r_j^2/d_j (Schur complement, block-scoped)"
+            if args.method == "obs_cancel_block" else
+            "greedy OBS residual (global): r_j^2/d_j with Schur complement updates (float64)"
+        )
         summary = {
-            "method": "obs_cancel",
+            "method": args.method,
             "sparsity_target": args.sparsity,
             "sparsity_actual": actual_sparsity,
-            "scoring": "greedy OBS residual: r_j^2/d_j with Schur complement updates",
+            "scoring": scoring_desc,
             "correction": "column-ordered OBS weight update in blocks",
             "damp": args.damp,
             "block_size": args.block_size,
