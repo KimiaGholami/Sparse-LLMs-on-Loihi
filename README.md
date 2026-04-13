@@ -28,7 +28,7 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 | Greedy covariance (`prune_quadratic.py`) | 1,103 | 0.279 | 0.216 | 0.267 | 0.535 | 0.476 | 0.355 |
 | Greedy + weight correction (`prune_cancellation.py`) | 615 | 0.291 | 0.205 | 0.272 | 0.545 | 0.471 | 0.298 |
 | SparseGPT (`prune_sparsegpt.py`) | **29.6** | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | **0.492** |
-| Hybrid: cancellation selection + OBS correction (`prune_hybrid.py`) | 958 | — | — | — | — | — | — |
+| Hybrid: cancellation selection + OBS correction (`prune_hybrid.py`) | 958 | 0.279 | 0.208 | 0.265 | 0.546 | 0.470 | 0.354 |
 | Interleaved: block-level cancellation + OBS (`prune_interleaved.py`) | 856 | 0.285 | 0.238 | 0.257 | 0.534 | 0.492 | 0.361 |
 | **OBS-cancel (`prune_obs_cancel.py`)** | **24.1** | 0.569 | 0.248 | 0.345 | 0.665 | 0.517 | **0.469** |
 
