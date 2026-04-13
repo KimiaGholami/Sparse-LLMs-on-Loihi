@@ -217,8 +217,13 @@ def obs_cancel_prune_layer(W: torch.Tensor, Sigma: torch.Tensor,
     # is row-specific. We batch this with gather/scatter.
     # ---------------------------------------------------------------
 
-    R = W.clone().float()                          # (out_f, in_f) residual weights
-    D = H_inv.diagonal().unsqueeze(0).expand(out_f, -1).clone()  # (out_f, in_f)
+    # Use float64 for residuals to reduce accumulated drift over many rank-1 updates.
+    # For large layers (e.g. LLaMA-7B in_f=4096/11008), we perform k=2000-5500
+    # rank-1 Schur complement updates. In float32 the D diagonal drifts negative;
+    # float64 keeps the Schur complements accurate throughout.
+    H_inv64 = H_inv.double()
+    R = W.clone().double().to(device)              # (out_f, in_f) residual weights
+    D = H_inv64.diagonal().unsqueeze(0).expand(out_f, -1).clone()  # (out_f, in_f)
     pruned = torch.zeros(out_f, in_f, device=device, dtype=torch.bool)
 
     for _ in range(k):
@@ -233,7 +238,7 @@ def obs_cancel_prune_layer(W: torch.Tensor, Sigma: torch.Tensor,
         d_c = D[rows, chosen].clamp(min=1e-8)      # (out_f,)   D[i, c_i]
 
         # H_inv row at each chosen column: H_inv[c_i, :] — (out_f, in_f)
-        H_inv_c = H_inv[chosen, :]                 # (out_f, in_f)
+        H_inv_c = H_inv64[chosen, :]               # (out_f, in_f)
 
         # Rank-1 update:
         #   R[i, :] -= (r_c[i] / d_c[i]) * H_inv[c_i, :]
@@ -244,8 +249,10 @@ def obs_cancel_prune_layer(W: torch.Tensor, Sigma: torch.Tensor,
         R -= scale_r * H_inv_c
         D -= H_inv_c * H_inv_c / scale_d
 
-        # Clamp D to avoid negative values from floating-point drift
+        # Clamp D to avoid residual negative values from floating-point drift
         D.clamp_(min=1e-8)
+
+    del H_inv64, R, D  # free double-precision buffers before OBS correction
 
     # ---------------------------------------------------------------
     # Step 2: Column-ordered OBS correction (same as SparseGPT)
