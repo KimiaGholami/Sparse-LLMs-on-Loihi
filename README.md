@@ -59,9 +59,10 @@ Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama
 |-------|-----------------|
 | Dense baseline | 8.64 |
 | SparseGPT (`prune_llama.py --method sparsegpt`) | **12.70** |
-| OBS-cancel (`prune_llama.py --method obs_cancel`) | 26.93 |
+| OBS-cancel float32 (`prune_llama.py --method obs_cancel`) | 26.93 |
+| OBS-cancel float64 residuals (numerical fix) | 25.99 |
 
-**Observations:** Unlike the 1B model where OBS-cancel outperforms SparseGPT (24.1 vs 29.6), on LLaMA-7B OBS-cancel underperforms SparseGPT (26.93 vs 12.70). We attribute this to **numerical drift in the Schur complement residuals** for large layers. LLaMA-7B has in_features ∈ {4096, 11008}, requiring k ∈ {2048, 5504} greedy rank-1 update steps (vs. k=1024 in the 1B model). After 2000+ rank-1 updates to the residual diagonal D, floating-point drift causes D values to go negative and get clamped to 1e-8, distorting the OBS score `r_j²/d_j` for remaining weights. Investigation and numerical stabilisation of the greedy selection phase for large-layer models is ongoing.
+**Observations:** Unlike the 1B model where OBS-cancel outperforms SparseGPT (24.1 vs 29.6), on LLaMA-7B OBS-cancel underperforms SparseGPT regardless of precision (25.99 vs 12.70). Switching R and D to float64 (commit `5f026e1`) reduces PPL from 26.93 → 25.99, confirming that numerical drift in the Schur complement residuals is a contributing factor, but the gap remains large. LLaMA-7B has in_features ∈ {4096, 11008}, requiring k ∈ {2048, 5504} greedy steps per layer vs. k=1024 in the 1B model. The fundamental issue is that with thousands of per-row greedy steps choosing *different* columns, the pruned mask is no longer column-ordered, so the subsequent column-ordered OBS correction is misaligned: it applies corrections in column order but the mask was built in a different order, leaving reconstruction errors unaccounted for. SparseGPT's column-ordered selection and column-ordered correction are inherently consistent. Fixing this misalignment is the primary open research question.
 
 ## Model weights
 
