@@ -51,6 +51,18 @@ WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
 
 OBS-cancel outperforms SparseGPT at every sparsity level. The margin grows with sparsity (1.02× at 30% → 1.60× at 60% → 1.74× at 70% → 1.83× at 80%), consistent with cancellation effects becoming more important as more weights are removed. Full sweep results in `results/sparsity_sweep.json`.
 
+## LLaMA-7B results (50% sparsity)
+
+Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama_7b). PPL on WikiText-2 test set.
+
+| Model | PPL (WikiText-2) |
+|-------|-----------------|
+| Dense baseline | 8.64 |
+| SparseGPT (`prune_llama.py --method sparsegpt`) | **12.70** |
+| OBS-cancel (`prune_llama.py --method obs_cancel`) | 26.93 |
+
+**Observations:** Unlike the 1B model where OBS-cancel outperforms SparseGPT (24.1 vs 29.6), on LLaMA-7B OBS-cancel underperforms SparseGPT (26.93 vs 12.70). We attribute this to **numerical drift in the Schur complement residuals** for large layers. LLaMA-7B has in_features ∈ {4096, 11008}, requiring k ∈ {2048, 5504} greedy rank-1 update steps (vs. k=1024 in the 1B model). After 2000+ rank-1 updates to the residual diagonal D, floating-point drift causes D values to go negative and get clamped to 1e-8, distorting the OBS score `r_j²/d_j` for remaining weights. Investigation and numerical stabilisation of the greedy selection phase for large-layer models is ongoing.
+
 ## Model weights
 
 Dense and pruned model weights are available on the Hugging Face Hub under [`ikimyaii`](https://huggingface.co/ikimyaii).
