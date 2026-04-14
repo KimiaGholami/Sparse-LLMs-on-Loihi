@@ -56,19 +56,25 @@ OBS-cancel outperforms SparseGPT at every sparsity level. The margin grows with 
 
 ## LLaMA-7B results (50% sparsity)
 
-Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama_7b). PPL on WikiText-2 test set.
+Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama_7b). PPL on WikiText-2 test set; downstream tasks evaluated zero-shot with `lm-evaluation-harness`.
 
-| Model | PPL (WikiText-2) |
-|-------|-----------------|
-| Dense baseline | 8.64 |
-| SparseGPT (`prune_llama.py --method sparsegpt`) | 12.70 |
-| OBS-cancel global float32 (`--method obs_cancel`) | 26.93 |
-| OBS-cancel global float64 residuals | 25.99 |
-| **OBS-cancel-block (`--method obs_cancel_block`)** | **11.92** |
+**PPL (WikiText-2):**
 
-**Observations:** Global OBS-cancel fails on LLaMA-7B due to two compounding problems: (1) **ordering mismatch** — the global greedy mask is not column-ordered, but the OBS correction assumes column-ordered pruning; (2) **numerical drift** — k ∈ {2048, 5504} Schur complement rank-1 updates cause the residual diagonal D to drift in float32 (float64 helps slightly: 26.93 → 25.99, but the ordering mismatch dominates).
+| Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
+|-------|-----|-------|-------|-----------|------|------------|---------|
+| Dense baseline | 8.64 | 0.723 | 0.370 | 0.526 | 0.749 | 0.675 | **0.608** |
+| SparseGPT | 12.70 | 0.659 | 0.349 | 0.478 | 0.725 | 0.643 | **0.571** |
+| **OBS-cancel-block** | **11.92** | 0.632 | 0.323 | 0.460 | 0.712 | 0.643 | **0.554** |
+| OBS-cancel (global, fp32) | 26.93 | — | — | — | — | — | — |
+| OBS-cancel (global, fp64) | 25.99 | — | — | — | — | — | — |
 
-**OBS-cancel-block** fixes both issues by restricting each greedy selection to its own 128-column block and immediately applying OBS corrections before moving on. This eliminates the ordering mismatch entirely and limits rank-1 steps to ~64 per block. Result: PPL **11.92**, outperforming SparseGPT (12.70) by **1.065×** — confirming that OBS-cancel's within-block cancellation-aware selection adds genuine value over SparseGPT's diagonal scoring even on large models.
+**Key observations:**
+
+OBS-cancel-block achieves better PPL than SparseGPT (**11.92 vs 12.70**, 1.065× improvement), but SparseGPT outperforms it on all five downstream tasks (avg acc 0.571 vs 0.554). This PPL–accuracy gap mirrors the 1B result, where OBS-cancel also had better PPL but slightly lower avg acc than SparseGPT.
+
+The disconnect suggests our method optimises the WikiText-2 token prediction distribution more effectively, but SparseGPT's column-ordered mask may better preserve the activation patterns that drive downstream reasoning tasks — possibly because the calibration data (WikiText-2 validation) does not match the distribution of ARC/HellaSwag/PIQA/WinoGrande.
+
+Global OBS-cancel fails on LLaMA-7B due to two compounding problems: (1) **ordering mismatch** — the global greedy mask is not column-ordered, but the OBS correction assumes column-ordered pruning; (2) **numerical drift** — k ∈ {2048, 5504} Schur complement rank-1 updates cause the residual diagonal D to drift (float64 helps slightly: 26.93 → 25.99, but the ordering mismatch dominates). OBS-cancel-block fixes both by restricting each greedy selection to its own 128-column block.
 
 ## LLaMA-7B sparsity sweep
 
