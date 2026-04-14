@@ -70,6 +70,21 @@ Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama
 
 **OBS-cancel-block** fixes both issues by restricting each greedy selection to its own 128-column block and immediately applying OBS corrections before moving on. This eliminates the ordering mismatch entirely and limits rank-1 steps to ~64 per block. Result: PPL **11.92**, outperforming SparseGPT (12.70) by **1.065×** — confirming that OBS-cancel's within-block cancellation-aware selection adds genuine value over SparseGPT's diagonal scoring even on large models.
 
+## LLaMA-7B sparsity sweep
+
+WikiText-2 PPL across sparsity levels. Dense baseline PPL: 8.64.
+
+| Sparsity | OBS-cancel-block (ours) | SparseGPT | Improvement |
+|----------|------------------------|-----------|-------------|
+| 30% | **9.12** | 9.18 | 1.007× |
+| 40% | **9.97** | 10.24 | 1.027× |
+| 50% | **11.92** | 12.70 | 1.065× |
+| 60% | **18.58** | 20.76 | 1.117× |
+| 70% | **67.73** | 71.20 | 1.051× |
+| 80% | **948.5** | 1103.6 | 1.163× |
+
+OBS-cancel-block outperforms SparseGPT at every sparsity level on LLaMA-7B. The improvement margin is largest at 60–80% (1.05–1.16×), consistent with cancellation effects becoming more important at higher sparsity — the same pattern observed on the 1B model. Full results in `results/sparsity_sweep_llama.json`.
+
 ## Model weights
 
 Dense and pruned model weights are available on the Hugging Face Hub under [`ikimyaii`](https://huggingface.co/ikimyaii).
