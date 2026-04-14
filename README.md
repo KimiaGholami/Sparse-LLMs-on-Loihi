@@ -65,8 +65,6 @@ Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama
 | Dense baseline | 8.64 | 0.723 | 0.370 | 0.526 | 0.749 | 0.675 | **0.608** |
 | SparseGPT | 12.70 | 0.659 | 0.349 | 0.478 | 0.725 | 0.643 | **0.571** |
 | **OBS-cancel-block** | **11.92** | 0.632 | 0.323 | 0.460 | 0.712 | 0.643 | **0.554** |
-| OBS-cancel (global, fp32) | 26.93 | — | — | — | — | — | — |
-| OBS-cancel (global, fp64) | 25.99 | — | — | — | — | — | — |
 
 **Key observations:**
 
