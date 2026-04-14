@@ -54,11 +54,11 @@ WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
 
 OBS-cancel outperforms SparseGPT at every sparsity level. The margin grows with sparsity (1.02× at 30% → 1.60× at 60% → 1.74× at 70% → 1.83× at 80%), consistent with cancellation effects becoming more important as more weights are removed. Full sweep results in `results/sparsity_sweep.json`.
 
-## LLaMA-7B results (50% sparsity)
+## LLaMA-7B results
 
 Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama_7b). PPL on WikiText-2 test set; downstream tasks evaluated zero-shot with `lm-evaluation-harness`.
 
-**PPL (WikiText-2):**
+**50% sparsity:**
 
 | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
 |-------|-----|-------|-------|-----------|------|------------|---------|
@@ -66,9 +66,19 @@ Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama
 | SparseGPT | 12.70 | 0.659 | 0.349 | 0.478 | 0.725 | 0.643 | **0.571** |
 | **OBS-cancel-block** | **11.92** | 0.632 | 0.323 | 0.460 | 0.712 | 0.643 | **0.554** |
 
+**80% sparsity:**
+
+| Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
+|-------|-----|-------|-------|-----------|------|------------|---------|
+| Dense baseline | 8.64 | 0.723 | 0.370 | 0.526 | 0.749 | 0.675 | **0.608** |
+| SparseGPT | 1,103.6 | 0.269 | 0.212 | 0.258 | 0.532 | 0.505 | 0.355 |
+| **OBS-cancel-block** | **948.5** | 0.252 | 0.213 | 0.260 | 0.521 | 0.500 | 0.349 |
+
+At 80% sparsity both models collapse to near-random performance (random baselines: ARC ~0.25, PIQA/WinoGrande ~0.50), consistent with PPL > 1000. OBS-cancel-block retains slightly better PPL (948.5 vs 1103.6, 1.16× improvement) while task accuracy is statistically indistinguishable from SparseGPT at this sparsity level.
+
 **Key observations:**
 
-OBS-cancel-block achieves better PPL than SparseGPT (**11.92 vs 12.70**, 1.065× improvement), but SparseGPT outperforms it on all five downstream tasks (avg acc 0.571 vs 0.554). This PPL–accuracy gap mirrors the 1B result, where OBS-cancel also had better PPL but slightly lower avg acc than SparseGPT.
+At 50% sparsity, OBS-cancel-block achieves better PPL than SparseGPT (**11.92 vs 12.70**, 1.065× improvement), but SparseGPT outperforms it on downstream tasks (avg acc 0.571 vs 0.554). This PPL–accuracy gap mirrors the 1B result, where OBS-cancel also had better PPL but slightly lower avg acc than SparseGPT.
 
 The disconnect suggests our method optimises the WikiText-2 token prediction distribution more effectively, but SparseGPT's column-ordered mask may better preserve the activation patterns that drive downstream reasoning tasks — possibly because the calibration data (WikiText-2 validation) does not match the distribution of ARC/HellaSwag/PIQA/WinoGrande.
 
