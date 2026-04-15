@@ -31,7 +31,7 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 | Hybrid: cancellation selection + OBS correction (`prune_hybrid.py`) | 958 | 0.279 | 0.208 | 0.265 | 0.546 | 0.470 | 0.354 |
 | Interleaved: block-level cancellation + OBS (`prune_interleaved.py`) | 856 | 0.285 | 0.238 | 0.257 | 0.534 | 0.492 | 0.361 |
 | **OBS-cancel (`prune_obs_cancel.py`)** | **24.1** | 0.569 | 0.248 | 0.345 | 0.665 | 0.517 | **0.469** |
-| OBS-cancel-block (`prune_obs_cancel.py --method obs_cancel_block`) | 25.5 | — | — | — | — | — | — |
+| OBS-cancel-block (`prune_obs_cancel.py --method obs_cancel_block`) | 25.5 | 0.561 | 0.247 | 0.345 | 0.662 | 0.512 | 0.465 |
 
 **Key observations:** Our proposed **OBS-cancel** method achieves PPL **24.1** at 50% sparsity, outperforming SparseGPT (29.6) by **1.23×** with identical OBS corrections — the gain comes entirely from better prune mask selection.
 
