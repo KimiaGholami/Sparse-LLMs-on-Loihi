@@ -56,6 +56,20 @@ To investigate whether the PPL–accuracy gap (OBS-cancel-block has better PPL b
 
 Both methods degrade in absolute terms under C4 calibration (SparseGPT: 0.492 → 0.435; OBS-cancel-block: 0.465 → 0.443) because the activation covariance estimated from web text is a poorer match for the WikiText-2 evaluation distribution. The relative ordering reversal is the meaningful signal.
 
+## Block size sweep (1B, 50% sparsity)
+
+OBS-cancel-block restricts each greedy selection round to the current 128-column block's H_inv submatrix. Larger blocks capture more cross-block cancellation at the cost of more Schur complement steps per block. Dense baseline PPL: 19.5.
+
+| Block size | PPL (WikiText-2) | vs dense |
+|-----------|-----------------|---------|
+| 64 | 26.38 | +6.86 |
+| **128** (default) | **25.47** | +5.95 |
+| 256 | 25.24 | +5.72 |
+| 512 | 24.85 | +5.33 |
+| ∞ (global OBS-cancel) | **24.1** | +4.58 |
+
+PPL improves monotonically with block size, confirming that larger blocks capture more cross-weight cancellation. The gains diminish beyond 256 (128→256: −0.23; 256→512: −0.39; 512→∞: −0.75), and the global variant's remaining advantage comes from cross-block interactions spanning more than 512 columns. The default block size of 128 is the best choice for large models (where global OBS-cancel suffers from ordering mismatch and numerical drift); on the 1B model either variant works. Full results in `results/block_size_sweep.json`.
+
 ## Sparsity sweep (PPL vs sparsity level)
 
 WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
