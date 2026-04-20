@@ -78,14 +78,14 @@ PPL improves monotonically with block size, confirming that larger blocks captur
 
 WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
 
-| Sparsity | OBS-cancel (ours) | SparseGPT | Greedy + correction | Wanda |
-|----------|------------------|-----------|---------------------|-------|
-| 30% | **20.2** | 20.5 | 32.6 | 34.8 |
-| 40% | **21.2** | 22.4 | 84.3 | 189.6 |
-| 50% | **24.1** | 29.6 | 615 | 3,545 |
-| 60% | **47.0** | 75.5 | 3,507 | 11,319 |
-| 70% | **4,365** | 7,591 | 9,065 | 24,670 |
-| 80% | **14,177** | 25,929 | 17,077 | 11,076 |
+| Sparsity | OBS-cancel (ours) | SparseGPT | Greedy + correction | Wanda | RIA |
+|----------|------------------|-----------|---------------------|-------|-----|
+| 30% | **20.2** | 20.5 | 32.6 | 34.8 | 34.7 |
+| 40% | **21.2** | 22.4 | 84.3 | 189.6 | 138.4 |
+| 50% | **24.1** | 29.6 | 615 | 3,545 | 2,105 |
+| 60% | **47.0** | 75.5 | 3,507 | 11,319 | 10,313 |
+| 70% | **4,365** | 7,591 | 9,065 | 24,670 | 11,897 |
+| 80% | **14,177** | 25,929 | 17,077 | 11,076 | 18,369 |
 
 OBS-cancel outperforms SparseGPT at every sparsity level. The margin grows with sparsity (1.02× at 30% → 1.60× at 60% → 1.74× at 70% → 1.83× at 80%), consistent with cancellation effects becoming more important as more weights are removed. Full sweep results in `results/sparsity_sweep.json`.
 
