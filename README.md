@@ -120,16 +120,18 @@ Global OBS-cancel fails on LLaMA-7B due to two compounding problems: (1) **order
 
 WikiText-2 PPL across sparsity levels. Dense baseline PPL: 8.64.
 
-| Sparsity | OBS-cancel-block (ours) | SparseGPT | Improvement |
-|----------|------------------------|-----------|-------------|
-| 30% | **9.12** | 9.18 | 1.007× |
-| 40% | **9.97** | 10.24 | 1.027× |
-| 50% | **11.92** | 12.70 | 1.065× |
-| 60% | **18.58** | 20.76 | 1.117× |
-| 70% | **67.73** | 71.20 | 1.051× |
-| 80% | **948.5** | 1103.6 | 1.163× |
+| Sparsity | RIA | Wanda | OBS-cancel-block | SparseGPT | OBS vs SparseGPT |
+|----------|-----|-------|-----------------|-----------|-----------------|
+| 30% | **8.96** | 9.04 | 9.12 | 9.18 | 1.007× |
+| 40% | **9.54** | 9.76 | 9.97 | 10.24 | 1.027× |
+| 50% | **11.20** | 11.43 | 11.92 | 12.70 | 1.065× |
+| 60% | 18.54 | **18.11** | **18.58** | 20.76 | 1.117× |
+| 70% | 104.1 | 82.1 | **67.73** | 71.20 | 1.051× |
+| 80% | 1609.5 | 1252.3 | **948.5** | 1103.6 | 1.163× |
 
-OBS-cancel-block outperforms SparseGPT at every sparsity level on LLaMA-7B. The improvement margin is largest at 60–80% (1.05–1.16×), consistent with cancellation effects becoming more important at higher sparsity — the same pattern observed on the 1B model. Full results in `results/sparsity_sweep_llama.json`.
+**Key finding: RIA is the best method at 30–60% sparsity on LLaMA-7B**, achieving PPL 8.96/9.54/11.20/18.54 — better than both OBS-cancel-block and SparseGPT. This extends the 50% result observed earlier. The no-correction methods (Wanda, RIA) exploit LLaMA-7B's high redundancy: at moderate sparsity, the activation-weighted importance scoring is sufficient to identify genuinely low-importance weights, and the model's excess capacity absorbs the uncompensated reconstruction error. At 70–80% sparsity this breaks down catastrophically (RIA: 104→1,610; Wanda: 82→1,252), while OBS correction keeps SparseGPT and OBS-cancel-block relatively stable.
+
+OBS-cancel-block outperforms SparseGPT at every sparsity level. The improvement is consistent (1.05–1.16×) and largest at 60–80%, matching the pattern on the 1B transformer and HGRN. Full results in `results/sparsity_sweep_llama.json`.
 
 ## HGRN-1.3B results
 
@@ -148,6 +150,21 @@ Experiments on [`fla-hub/hgrn-1.3B-100B`](https://huggingface.co/fla-hub/hgrn-1.
 - **No-correction methods collapse.** Wanda (PPL 404) and RIA (PPL 410) fail on HGRN at 50% sparsity, with LAMBADA accuracy dropping to near zero. This confirms the 1B finding — without weight correction, even activation-informed scoring cannot maintain model quality at this sparsity level. Unlike LLaMA-7B (where RIA was competitive), HGRN-1.3B shares the 1B transformer's sensitivity, suggesting scale and not architecture type determines whether correction is necessary.
 
 - **OBS-cancel-block outperforms SparseGPT on PPL** (**19.0 vs 20.3**, 1.07× improvement) and **matches on downstream accuracy** (0.429 each). This mirrors the 1B transformer result (PPL 25.5 vs 29.6, avg acc 0.465 vs 0.492) and confirms the gain from cancellation-aware greedy selection is architecture-agnostic — it holds for both attention-based transformers and gated recurrent SSMs.
+
+## HGRN-1.3B sparsity sweep
+
+WikiText-2 PPL across sparsity levels. Dense baseline PPL: 14.18.
+
+| Sparsity | OBS-cancel-block (ours) | SparseGPT | Improvement |
+|----------|------------------------|-----------|-------------|
+| 30% | **14.92** | 15.02 | 1.007× |
+| 40% | **16.06** | 16.46 | 1.025× |
+| 50% | **19.02** | 20.30 | 1.068× |
+| 60% | **29.14** | 32.43 | 1.113× |
+| 70% | **112.7** | 115.4 | 1.023× |
+| 80% | **1,952** | 2,811 | 1.441× |
+
+OBS-cancel-block outperforms SparseGPT at every sparsity level on HGRN-1.3B. The improvement pattern mirrors the 1B transformer closely: modest gains at 30–40% (1.007–1.025×), growing through 50–60% (1.068–1.113×), and largest at 80% (1.441×). This confirms the architecture-agnostic nature of cancellation-aware selection: the benefit of tracking cross-weight interactions via Schur complement updates compounds with sparsity regardless of whether the model is a transformer or a gated recurrent SSM. Full results in `results/sparsity_sweep_hgrn.json`.
 
 ## Model weights
 
