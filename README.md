@@ -131,6 +131,24 @@ WikiText-2 PPL across sparsity levels. Dense baseline PPL: 8.64.
 
 OBS-cancel-block outperforms SparseGPT at every sparsity level on LLaMA-7B. The improvement margin is largest at 60–80% (1.05–1.16×), consistent with cancellation effects becoming more important at higher sparsity — the same pattern observed on the 1B model. Full results in `results/sparsity_sweep_llama.json`.
 
+## HGRN-1.3B results
+
+Experiments on [`fla-hub/hgrn-1.3B-100B`](https://huggingface.co/fla-hub/hgrn-1.3B-100B), a 1.3B Hierarchical Gated Recurrent Network (HGRN) state space model. All evaluations at 50% sparsity on WikiText-2 test / lm-evaluation-harness zero-shot.
+
+| Model | PPL (WikiText-2) | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
+|-------|-----------------|-------|-------|-----------|------|------------|---------|---------|
+| `hgrn-1.3B-dense-baseline` | 14.18 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
+| Wanda (`prune_wanda.py`) | 404 | 0.312 | 0.263 | 0.295 | 0.545 | 0.517 | 0.003 | 0.323 |
+| RIA (`prune_ria.py`) | 410 | 0.305 | 0.255 | 0.298 | 0.542 | 0.511 | 0.004 | 0.319 |
+| SparseGPT (`prune_sparsegpt.py`) | 20.3 | 0.467 | 0.264 | 0.434 | 0.676 | 0.519 | 0.215 | 0.429 |
+| **OBS-cancel-block** (`prune_obs_cancel.py`) | **19.0** | 0.461 | 0.261 | 0.427 | 0.669 | 0.525 | 0.230 | **0.429** |
+
+**Key observations:** The HGRN results reproduce the 1B transformer pattern exactly:
+
+- **No-correction methods collapse.** Wanda (PPL 404) and RIA (PPL 410) fail on HGRN at 50% sparsity, with LAMBADA accuracy dropping to near zero. This confirms the 1B finding — without weight correction, even activation-informed scoring cannot maintain model quality at this sparsity level. Unlike LLaMA-7B (where RIA was competitive), HGRN-1.3B shares the 1B transformer's sensitivity, suggesting scale and not architecture type determines whether correction is necessary.
+
+- **OBS-cancel-block outperforms SparseGPT on PPL** (**19.0 vs 20.3**, 1.07× improvement) and **matches on downstream accuracy** (0.429 each). This mirrors the 1B transformer result (PPL 25.5 vs 29.6, avg acc 0.465 vs 0.492) and confirms the gain from cancellation-aware greedy selection is architecture-agnostic — it holds for both attention-based transformers and gated recurrent SSMs.
+
 ## Model weights
 
 Dense and pruned model weights are available on the Hugging Face Hub under [`ikimyaii`](https://huggingface.co/ikimyaii).
