@@ -162,16 +162,28 @@ Experiments on [`fla-hub/hgrn-1.3B-100B`](https://huggingface.co/fla-hub/hgrn-1.
 
 WikiText-2 PPL across sparsity levels. Dense baseline PPL: 14.18.
 
-| Sparsity | OBS-cancel-block (ours) | SparseGPT | Improvement |
-|----------|------------------------|-----------|-------------|
-| 30% | **14.92** | 15.02 | 1.007× |
-| 40% | **16.06** | 16.46 | 1.025× |
-| 50% | **19.02** | 20.30 | 1.068× |
-| 60% | **29.14** | 32.43 | 1.113× |
-| 70% | **112.7** | 115.4 | 1.023× |
-| 80% | **1,952** | 2,811 | 1.441× |
+| Sparsity | OBS-cancel-block (ours) | SparseGPT | Wanda | RIA |
+|----------|------------------------|-----------|-------|-----|
+| 30% | **14.92** | 15.02 | 31.64 | 30.72 |
+| 40% | **16.06** | 16.46 | 76.87 | 68.27 |
+| 50% | **19.02** | 20.30 | 584 | 499 |
+| 60% | **29.14** | 32.43 | 11,552 | 11,255 |
+| 70% | **112.7** | 115.4 | 20,592 | 14,723 |
+| 80% | **1,952** | 2,811 | 75,620 | 26,817 |
 
-OBS-cancel-block outperforms SparseGPT at every sparsity level on HGRN-1.3B. The improvement pattern mirrors the 1B transformer closely: modest gains at 30–40% (1.007–1.025×), growing through 50–60% (1.068–1.113×), and largest at 80% (1.441×). This confirms the architecture-agnostic nature of cancellation-aware selection: the benefit of tracking cross-weight interactions via Schur complement updates compounds with sparsity regardless of whether the model is a transformer or a gated recurrent SSM. Full results in `results/sparsity_sweep_hgrn.json`.
+OBS-cancel-block outperforms SparseGPT at every sparsity level on HGRN-1.3B, and both correction-based methods vastly outperform Wanda and RIA beyond 40% sparsity. The no-correction methods collapse dramatically on HGRN (Wanda PPL 75,620 at 80%), worse than on the 1B transformer (Wanda PPL 11,076), confirming that HGRN's architecture is at least as sensitive to uncompensated pruning as the 1B transformer. Full results in `results/sparsity_sweep_hgrn.json`.
+
+## HGRN-1.3B 80% sparsity
+
+| Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
+|-------|-----|-------|-------|-----------|------|------------|---------|---------|
+| `hgrn-1.3B-dense-baseline` | 14.18 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
+| Wanda | 75,620 | 0.249 | 0.235 | 0.260 | 0.513 | 0.519 | 0.000 | 0.296 |
+| RIA | 26,817 | 0.255 | 0.230 | 0.259 | 0.516 | 0.498 | 0.000 | 0.293 |
+| SparseGPT | 2,811 | 0.269 | 0.220 | 0.260 | 0.533 | 0.519 | 0.000 | 0.300 |
+| **OBS-cancel-block** | **1,952** | 0.269 | 0.222 | 0.258 | 0.527 | 0.491 | 0.000 | 0.294 |
+
+At 80% sparsity all methods collapse to near-random performance (LAMBADA→0 across the board). OBS-cancel-block retains the best PPL (1,952 vs 2,811 for SparseGPT, 1.44×) while task accuracy is statistically indistinguishable between all methods. This mirrors the LLaMA-7B 80% result and confirms that PPL advantage from weight correction persists even at extreme sparsity, but downstream task quality cannot be recovered at this compression level.
 
 ## Model weights
 
