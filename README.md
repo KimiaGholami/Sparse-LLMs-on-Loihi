@@ -98,17 +98,20 @@ Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama
 | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
 |-------|-----|-------|-------|-----------|------|------------|---------|
 | Dense baseline | 8.64 | 0.723 | 0.370 | 0.526 | 0.749 | 0.675 | **0.608** |
-| RIA (`prune_ria.py`) | 11.22 | 0.601 | 0.332 | 0.624 | 0.732 | 0.649 | 0.588 |
-| SparseGPT | 12.70 | 0.659 | 0.349 | 0.478 | 0.725 | 0.643 | **0.571** |
-| **OBS-cancel-block** | **11.92** | 0.632 | 0.323 | 0.460 | 0.712 | 0.643 | **0.554** |
+| RIA (`prune_ria.py`) | **11.22** | 0.601 | 0.332 | 0.624 | 0.732 | 0.649 | **0.588** |
+| Wanda (`prune_wanda.py`) | 11.43 | 0.602 | 0.347 | 0.628 | 0.732 | 0.663 | 0.595 |
+| SparseGPT | 12.70 | 0.659 | 0.349 | 0.478 | 0.725 | 0.643 | 0.571 |
+| **OBS-cancel-block** | 11.92 | 0.632 | 0.323 | 0.460 | 0.712 | 0.643 | 0.554 |
 
 **80% sparsity:**
 
 | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
 |-------|-----|-------|-------|-----------|------|------------|---------|
 | Dense baseline | 8.64 | 0.723 | 0.370 | 0.526 | 0.749 | 0.675 | **0.608** |
+| RIA (`prune_ria.py`) | 1,609.5 | 0.268 | 0.268 | 0.261 | 0.495 | 0.496 | 0.357 |
+| Wanda (`prune_wanda.py`) | 1,252.3 | 0.253 | 0.267 | 0.265 | 0.499 | 0.491 | 0.355 |
 | SparseGPT | 1,103.6 | 0.269 | 0.212 | 0.258 | 0.532 | 0.505 | 0.355 |
-| **OBS-cancel-block** | **948.5** | 0.252 | 0.213 | 0.260 | 0.521 | 0.500 | 0.349 |
+| **OBS-cancel-block** | **948.5** | 0.252 | 0.213 | 0.260 | 0.521 | 0.500 | **0.349** |
 
 At 80% sparsity both models collapse to near-random performance (random baselines: ARC ~0.25, PIQA/WinoGrande ~0.50), consistent with PPL > 1000. OBS-cancel-block retains slightly better PPL (948.5 vs 1103.6, 1.16× improvement) while task accuracy is statistically indistinguishable from SparseGPT at this sparsity level.
 
