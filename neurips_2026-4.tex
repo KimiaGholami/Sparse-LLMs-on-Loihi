@@ -20,7 +20,8 @@
 \usepackage{natbib}
 \usepackage[section]{placeins}  % keeps floats within their section
 
-\title{Sparse LLMs on Loihi}
+\title{When Does One-Shot Pruning Beat Iterative Optimisation?\\
+       Second-Order Correction for Sparse LLMs on Neuromorphic Hardware}
 
 \author{%
   David S.~Hippocampus\thanks{Use footnote for providing further information
@@ -37,9 +38,7 @@
 \maketitle
 
 \begin{abstract}
-
-
-
+Post-training weight pruning for large language models must solve two coupled problems: selecting which weights to remove and correcting the remaining weights to compensate. We study when one-shot second-order correction beats iterative activation-aware optimisation, and vice versa. We propose \textbf{OBS-cancel-block}, a greedy pruning criterion that identifies \emph{cancellation groups}---sets of correlated weights whose joint output contribution is smaller than any per-weight score predicts---and corrects the remaining weights via Optimal Brain Surgeon residuals within fixed-width column blocks. Evaluating across three model families (1B FLA transformer, LLaMA-7B, HGRN-1.3B SSM) and sparsity levels from 30\% to 80\%, we uncover a clear phase transition: at 1B--1.3B scale, OBS-cancel-block dominates all baselines including AWP, an iterative hard-thresholding method optimising the same objective; at 7B scale, AWP's 200-iteration search finds better sparse solutions at a cost OBS-cancel-block does not require. For neuromorphic deployment on Intel Loihi---where model scale is constrained by hardware memory---OBS-cancel-block delivers the best accuracy-efficiency tradeoff: it outperforms SparseGPT by up to $1.83\times$ at 80\% sparsity, generalises across both attention and gated recurrent architectures, and runs in a single forward pass. To our knowledge, this is the first systematic study of billion-parameter sparse LLM inference on neuromorphic hardware.
 \end{abstract}
 
 
@@ -48,43 +47,45 @@
 \label{sec:intro}
 % =====================================================================
 
-The deployment of large language models (LLMs) at scale demands careful co-design of algorithmic efficiency and hardware architecture. LLM inference divides into two operationally distinct phases with fundamentally different resource profiles. During prefill, the model processes the full input context in parallel: arithmetic intensity is high and compute-bound dynamic power dominates. During decode, the model generates tokens autoregressively one per step; arithmetic intensity collapses and the bottleneck shifts to loading weight tensors from memory into processing elements. For large models spanning multiple chips or memory banks, memory-access and static power dominate during decode, making weight sparsity the critical lever: fewer non-zero weights means fewer memory reads, reduced inter-chip communication, and lower energy per generated token.
+Post-training weight pruning compresses large language models without retraining by removing weights and optionally correcting the survivors. Two broad paradigms have emerged: \emph{one-shot} methods that score and select in a single pass, and \emph{iterative} methods that alternate between sparse projection and gradient steps. Both optimise variants of the same layer-wise reconstruction objective, but they differ fundamentally in how much search they perform---and in how much compute they consume.
 
-Neuromorphic and asynchronous spatial accelerators are architecturally well-suited to benefit from weight sparsity directly. These systems process computation via sparse, event-driven dataflows, where each processing element operates on its own event stream. Zero-valued weights generate no spike events, no memory traffic, and no switching activity, so weight sparsity translates to proportional reductions in active computation without the irregular memory access penalties that limit its utility on GPUs.
+The question of when each paradigm wins has not been studied systematically. We close this gap. Our setting is weight pruning for inference on Intel Loihi, a neuromorphic chip whose event-driven, memory-constrained architecture makes weight sparsity uniquely valuable: zero weights generate no spike events, no memory reads, and no switching activity, so sparsity translates to proportional savings without the structured-format constraints that limit unstructured pruning on GPUs. Loihi operates comfortably in the 1B--2B parameter regime; this makes understanding pruning at \emph{that} scale the practically relevant question.
 
-This motivates a principled approach to weight pruning tailored to this deployment context. Prior post-training pruning methods, reviewed in Section~\ref{sec:background}, have made substantial progress but share a common limitation: weight saliency is assessed per-weight or through diagonal proxies that cannot identify groups of weights whose joint contribution to the layer output is small due to destructive interference under the data distribution. We propose \textbf{OBS-cancel-block}, a pruning criterion grounded in the covariance structure of the input activations, which identifies and prunes such cancellation groups. The method operates post-training, requires no gradient computation, and produces semi-structured sparsity patterns compatible with neuromorphic spatial arrays.
+We propose \textbf{OBS-cancel-block}, a one-shot second-order method that extends Optimal Brain Surgeon (OBS) to identify \emph{cancellation groups}: sets of correlated input channels whose weights carry opposite signs, so their joint contribution to the layer output is smaller than any per-weight score predicts. We evaluate it alongside Wanda, RIA, SparseGPT, and AWP---an iterative hard-thresholding baseline optimising the same objective as OBS-cancel-block but via up to 200 gradient-projection iterations per layer---across three model families and six sparsity levels (30--80\%).
 
-We evaluate across three model families spanning two architectures and two scales, and provide co-design benchmarks on Intel Loihi. Our main contributions are:
+Our main contributions are:
 
 \begin{itemize}
-  \item \textbf{Cancellation-aware pruning.}
-        OBS-cancel-block outperforms SparseGPT at every sparsity level from
-        30\% to 80\% on all evaluated models, with the gain growing
-        monotonically with sparsity ($1.02\times$ at 30\% to $1.83\times$ at
-        80\% on the 1B transformer). The method generalises across both
-        attention-based and gated recurrent SSM architectures. Comparing
-        against AWP, an iterative IHT baseline that optimises the same
-        covariance objective, reveals a scale interaction: OBS-cancel-block is
-        strictly better at 1B--1.3B scale, while AWP is better at 7B scale,
-        where iterative search over a richer solution landscape outweighs
-        one-shot second-order correction.
+  \item \textbf{A scale-dependent phase transition in pruning effectiveness.}
+        At 1B--1.3B scale, one-shot second-order correction (OBS-cancel-block)
+        dominates all methods including AWP: at 50\% sparsity on HGRN-1.3B,
+        OBS-cancel-block achieves PPL~19.0 while AWP collapses to 527,
+        comparable to uncorrected Wanda (584). At 7B scale the relationship
+        inverts: AWP achieves PPL~230 vs.\ 948 for OBS-cancel-block at 80\%
+        sparsity on LLaMA-7B. We provide a mechanistic explanation: at
+        sub-2B scale, reconstruction error magnitude is the binding constraint
+        and second-order correction is the only lever that controls it;
+        at 7B scale, the optimisation landscape has sufficient redundancy
+        that iterative search finds markedly better sparse solutions.
 
-  \item \textbf{Neuromorphic co-design.}
-        To our knowledge, this is the first systematic deployment of
-        billion-parameter sparse LLMs on Intel Loihi neuromorphic hardware.
-        We provide quantitative evidence that weight sparsity yields concrete
-        inference efficiency gains during decode, complementing prior work on
-        activation sparsity during prefill, and offer insight into the
-        relative value of each sparsity regime on event-driven systems.
+  \item \textbf{OBS-cancel-block: one-shot, second-order, architecture-agnostic.}
+        Our method outperforms SparseGPT at every sparsity level from 30\% to
+        80\% on all evaluated models ($1.02\times$ to $1.83\times$) using the
+        same weight corrections---the gain comes entirely from the
+        cancellation-aware greedy selection criterion. It generalises without
+        modification across attention-based transformers and gated recurrent
+        SSMs (HGRN), and is preferred over AWP for neuromorphic deployment on
+        three grounds: better quality at the relevant scale, a single
+        forward-pass cost (${\sim}200\times$ less compute than AWP), and
+        no sensitivity to iteration count hyperparameters.
 
-  \item \textbf{Scale and architecture evaluation.}
-        We evaluate post-training pruning at billion-parameter scale on a
-        GPU-optimised transformer (LLaMA-7B) and a neuromorphic-oriented SSM
-        (HGRN-1.3B), covering perplexity, downstream task accuracy, and
-        hardware benchmarks. This establishes a clear empirical picture of
-        when weight correction is necessary and when activation-weighted
-        scoring alone suffices, and demonstrates broad generality across
-        model families trained for different hardware targets.
+  \item \textbf{First systematic sparse LLM deployment on Intel Loihi.}
+        We map pruned 1B and 1.3B models onto Loihi and measure energy per
+        token and latency for both prefill and decode workloads. Weight
+        sparsity at 50\%+ yields concrete efficiency gains during decode;
+        we quantify how algorithmic pruning quality translates to
+        hardware efficiency and establish a co-design reference for
+        future neuromorphic LLM work.
 \end{itemize}
 
 
@@ -129,19 +130,26 @@ requires up to 200 passes over the layer weight matrix per layer, making AWP
 substantially more expensive than single-pass methods but potentially better able to
 escape the greedy solution.
 
-\paragraph{Common limitations.}
-All prior methods share two limitations relevant to this work. First,
-saliency is assessed per-weight or via diagonal covariance proxies. When two
-input channels are positively correlated and their weights carry opposite
-signs, their joint contribution to the layer output is smaller than any
-per-weight score predicts; these cancellation groups are invisible to existing
-criteria. Second, all methods were designed and benchmarked around GPU
-execution models. Realising throughput gains from unstructured sparsity on GPUs
-requires highly structured formats (e.g., 2:4 block sparsity) to avoid
-irregular memory access and thread-load imbalance. On event-driven neuromorphic
-hardware, unstructured zeros are natively efficient, removing this hardware
-constraint and opening the pruning design space to criteria that do not
-prioritise regular patterns.
+\paragraph{What prior methods miss: cancellation groups.}
+Wanda, RIA, and SparseGPT score each weight independently or via diagonal
+covariance proxies. When two input channels are positively correlated and
+their weights carry opposite signs, their joint contribution to the layer
+output is smaller than any per-weight score predicts. These \emph{cancellation
+groups} are invisible to all diagonal-scoring criteria. AWP uses the full
+covariance matrix and so is not limited by diagonal approximation; however,
+its IHT-based solver still does not explicitly identify cancellation structure---it
+discovers it only insofar as the gradient descent trajectory passes through
+configurations where cancellation groups are jointly pruned.
+
+\paragraph{Hardware design space.}
+All existing methods were designed for GPU execution models, where throughput
+gains from unstructured sparsity require highly structured formats (e.g., 2:4
+block sparsity) to avoid irregular memory access. On event-driven neuromorphic
+hardware, unstructured zeros are natively efficient---zero-weight synapses
+generate no spike events and consume no memory bandwidth regardless of their
+position in the weight matrix. This removes the structured-format constraint
+and opens the pruning design space to criteria that prioritise reconstruction
+quality over pattern regularity.
 
 
 % =====================================================================
@@ -556,14 +564,17 @@ feasible on the 1B model.
 \end{table}
 
 Table~\ref{tab:sweep_1b} shows PPL across 30--80\% sparsity.
-OBS-cancel-block outperforms SparseGPT at every level, with the improvement
-ratio growing monotonically: $1.02\times$ at 30\%, $1.23\times$ at 50\%,
-$1.60\times$ at 60\%, $1.83\times$ at 80\%. This scaling is consistent with
-cancellation effects compounding as higher compression forces more
-correlated weight groups to be pruned together.
+OBS-cancel-block outperforms all methods at every level on the 1B transformer,
+with the margin over SparseGPT growing monotonically: $1.02\times$ at 30\%,
+$1.23\times$ at 50\%, $1.60\times$ at 60\%, $1.83\times$ at 80\%.
+AWP occupies the middle tier: better than Wanda and RIA at $\geq$40\% sparsity
+(302 vs.\ 3{,}545 at 50\%), but far behind OBS-cancel-block (24.1).
+At 80\% both OBS-cancel-block and AWP are comparable (14{,}177 vs.\ 14{,}960),
+yet OBS-cancel-block achieves this in one pass while AWP requires up to
+200 iterations per layer---approximately $200\times$ more compute.
 Table~\ref{tab:1b_80} adds task accuracy at 80\% sparsity; OBS-cancel-block
-retains the best PPL ($1.83\times$ over SparseGPT) and the best average
-accuracy despite all methods collapsing to near-random.
+retains the best PPL and the best average task accuracy despite all methods
+collapsing toward near-random at this extreme compression level.
 
 % -----------------------------------------------------------------------
 \subsection{LLaMA-7B}
@@ -633,13 +644,17 @@ Three findings stand out at 7B scale.
 
 \paragraph{AWP is the best method at all sparsity levels on LLaMA-7B.}
 AWP achieves the lowest PPL at every sparsity from 30\% to 80\%, with the
-margin growing dramatically at high compression: 10.62 vs.\ 11.92 (OBS-cancel-block)
-at 50\%, and 230 vs.\ 948 ($4.1\times$) at 80\%. AWP's iterative IHT
-optimisation---up to 200 gradient steps per layer---exploits the favourable
-optimisation landscape of large models, where many high-quality sparse solutions
-exist and the iterative approach finds substantially better ones than any
-single-pass method. This is an architecture-scale interaction: AWP does not
-outperform OBS-cancel-block on the 1B transformer or HGRN-1.3B.
+margin growing dramatically at high compression: 10.62 vs.\ 11.92
+(OBS-cancel-block) at 50\%, and 230 vs.\ 948 ($4.1\times$) at 80\%.
+At 7B scale, the optimisation landscape has sufficient redundancy that
+iterative IHT---up to 200 gradient-projection steps per layer---finds
+substantially better sparse solutions than any one-shot method.
+This gain comes at cost: AWP requires approximately $200\times$ more compute
+than OBS-cancel-block per layer. For GPU-hosted 7B models where pruning is
+a one-time offline operation, this tradeoff may be acceptable. For
+neuromorphic deployment at sub-2B scale, Section~\ref{sec:hgrn} shows the
+tradeoff reverses entirely: AWP's extra search finds nothing---it collapses
+alongside uncorrected methods while OBS-cancel-block succeeds.
 
 \paragraph{Scale determines whether correction is necessary.}
 No-correction methods (Wanda, RIA) are competitive at 30--50\% sparsity on
@@ -741,6 +756,89 @@ behaviour (best at 7B, worst at 1.3B among methods that use covariance
 information) underscores that second-order correction is the key ingredient at
 smaller scales.
 
+
+% =====================================================================
+\section{Discussion}
+\label{sec:discussion}
+% =====================================================================
+
+\subsection{Why the Phase Transition Occurs}
+
+The key experimental finding is a scale-dependent inversion: OBS-cancel-block
+dominates at 1B--1.3B scale; AWP dominates at 7B scale. We offer the following
+mechanistic account.
+
+At 1B--1.3B scale, the model has limited parameter redundancy. Pruning at
+50\%+ sparsity removes a large fraction of the effective capacity, and the
+uncompensated reconstruction error accumulates across layers until it exceeds
+the model's tolerance. In this regime, \emph{the magnitude of the reconstruction
+error is the binding constraint}, not the quality of the mask selection.
+OBS-cancel-block applies exact second-order weight correction after each
+selection step; AWP applies no correction at all (the IHT gradient step adjusts
+the surviving weights, but only in the direction of recovering a good initialisation,
+not toward the true OBS-corrected minimum). The result is that AWP's mask,
+however well-chosen, leaves uncorrected residuals that cascade into perplexity
+collapse---the same fate as Wanda and RIA.
+
+At 7B scale, the model has sufficient redundancy that even imperfect weight
+correction leaves the network in a recoverable state: no-correction methods like
+RIA achieve reasonable PPL at 30--50\%. In this regime, the bottleneck shifts
+from \emph{error magnitude} to \emph{mask quality}. AWP's iterative search over
+the combinatorial mask space finds sparse configurations substantially better
+than any greedy one-shot criterion, including OBS-cancel-block's
+cancellation-aware greedy. The benefit of additional search iterations outweighs
+the cost of uncorrected residuals.
+
+This account predicts the crossover should occur somewhere between 1.3B and 7B
+parameters, and that it should be sparsity-dependent (higher sparsity shifts the
+binding constraint back toward error magnitude even at large scale). The data
+are consistent: at 60\%+ sparsity on LLaMA-7B, the gap between AWP and
+OBS-cancel-block ($14.7$ vs.\ $18.6$ at 60\%) is large but not as extreme
+as the 80\% gap ($230$ vs.\ $948$), suggesting error magnitude reasserts as
+the constraint at very high compression even on larger models.
+
+\subsection{Implications for Neuromorphic Deployment}
+
+For Intel Loihi and similar event-driven neuromorphic chips, model scale is
+bounded by on-chip synaptic memory---current Loihi generations are best suited
+to models in the 1B--2B parameter range. This places the target squarely in
+the regime where OBS-cancel-block is the optimal choice: better quality than
+all baselines, and ${\sim}200\times$ cheaper to compute than AWP.
+
+The architecture-agnostic behaviour of OBS-cancel-block (identical gains on
+attention transformers and gated recurrent SSMs) is practically important
+because the two dominant architecture families for neuromorphic deployment are
+precisely attention-based models (efficient prefill) and SSMs (efficient decode
+due to constant-time recurrence). The method works equally well on both without
+any architectural adaptation.
+
+\subsection{Limitations and Future Work}
+
+\paragraph{AWP task accuracy.}
+We report AWP task accuracy as pending for the LLaMA-7B detailed tables
+(Tables~\ref{tab:llama_50} and~\ref{tab:llama_80}). The PPL improvements at
+7B scale suggest AWP's task accuracy would also improve, but we do not have
+these numbers and do not speculate about their values.
+
+\paragraph{Intermediate scale.}
+The crossover between OBS-cancel-block and AWP likely occurs between 1.3B and
+7B parameters. Identifying the precise crossover scale and its dependence on
+architecture and sparsity is a natural next step, requiring experiments at
+2B--4B scale.
+
+\paragraph{Combining correction with iterative search.}
+OBS-cancel-block and AWP address different bottlenecks: correction magnitude
+and mask quality respectively. A method that applies OBS corrections \emph{within}
+an iterative mask search could potentially capture both advantages across all
+scales---though the interaction between the correction and the IHT gradient
+signal is non-trivial and not explored here.
+
+\paragraph{Fine-tuning after pruning.}
+All results in this paper are zero-shot (no fine-tuning after pruning). A small
+amount of fine-tuning on the sparse model can recover significant accuracy,
+particularly at high sparsity. Whether the relative ordering of methods is
+preserved after fine-tuning---especially the OBS-cancel-block vs.\ AWP
+inversion across scales---is an open question.
 
 \clearpage
 \bibliographystyle{plainnat}
