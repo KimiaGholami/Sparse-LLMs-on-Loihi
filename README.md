@@ -55,13 +55,13 @@ To investigate whether the PPL–accuracy gap (OBS-cancel-block has better PPL b
 | WikiText-2 | OBS-cancel-block | 25.5 | 0.561 | 0.247 | 0.345 | 0.662 | 0.512 | 0.465 |
 | C4 | Wanda | 4,051 | 0.271 | 0.275 | 0.267 | 0.502 | 0.489 | 0.300 |
 | C4 | RIA | 2,357 | 0.270 | 0.267 | 0.272 | 0.515 | 0.496 | 0.303 |
-| C4 | AWP | pending | — | — | — | — | — | — |
+| C4 | AWP | pending† | 0.334 | 0.251 | 0.283 | 0.530 | 0.507 | 0.381 |
 | C4 | SparseGPT | 31.0 | 0.505 | 0.298 | 0.429 | 0.678 | 0.517 | 0.435 |
 | C4 | **OBS-cancel-block** | **26.3** | **0.519** | 0.291 | 0.426 | 0.663 | **0.541** | **0.443** |
 
 **Key finding:** With C4 calibration, OBS-cancel-block outperforms SparseGPT on **both** PPL (26.3 vs 31.0) and downstream task accuracy (0.443 vs 0.435). The task accuracy advantage SparseGPT had under WikiText-2 calibration disappears when calibration data is not drawn from the same distribution as the test set. This confirms the PPL–accuracy gap is a calibration-data artefact: WikiText-2 calibration gives SparseGPT's column-ordered mask an incidental advantage on WikiText-2-adjacent tasks, while OBS-cancel-block's superior cross-weight cancellation generalises better to a held-out calibration distribution.
 
-AWP with WikiText-2 calibration collapses to PPL 302 at this scale, in line with the main results. C4-calibrated AWP is pending. No-correction methods (Wanda, RIA) are effectively insensitive to calibration data choice — they collapse regardless, and downstream accuracy hovers near random (0.296–0.303) in both cases. This confirms that calibration data only matters when the pruning method can actually exploit the activation statistics via weight correction.
+AWP collapses to PPL 302 with WikiText-2 calibration and achieves near-identical task accuracy with C4 calibration (avg 0.381 vs 0.380), consistent with the finding that calibration choice is irrelevant when reconstruction error dominates. †WikiText-2 PPL for C4-calibrated AWP is being evaluated. No-correction methods (Wanda, RIA) are effectively insensitive to calibration data choice — they collapse regardless, and downstream accuracy hovers near random (0.296–0.303) in both cases. This confirms that calibration data only matters when the pruning method can actually exploit the activation statistics via weight correction.
 
 ## Block size sweep (1B, 50% sparsity)
 
