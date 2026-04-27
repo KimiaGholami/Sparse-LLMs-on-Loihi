@@ -87,6 +87,7 @@ def parse_args():
     p.add_argument("--batch_size", type=int, default=4)
     p.add_argument("--seq_len", type=int, default=512)
     p.add_argument("--bench_batch_size", type=int, default=8)
+    p.add_argument("--calib_dataset", choices=["wikitext2", "c4"], default="wikitext2")
     p.add_argument("--device", type=str,
                    default="cuda" if torch.cuda.is_available() else "cpu")
     return p.parse_args()
@@ -143,7 +144,7 @@ def main():
     print("\nCollecting calibration activations ...")
     batches = build_calib_batches(
         tokenizer, args.n_calib_batches, args.batch_size, args.seq_len,
-        calib_dataset="wikitext2",
+        calib_dataset=args.calib_dataset,
     )
     stats = collect_stats(model, batches, calib_device)
 

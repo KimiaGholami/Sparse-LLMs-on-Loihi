@@ -50,16 +50,18 @@ To investigate whether the PPL–accuracy gap (OBS-cancel-block has better PPL b
 |-----------|-------|-----|-------|-------|-----------|------|------------|---------|
 | WikiText-2 | Wanda | 3,545 | 0.271 | 0.228 | 0.260 | 0.523 | 0.493 | 0.296 |
 | WikiText-2 | RIA | 2,105 | 0.277 | 0.263 | 0.268 | 0.513 | 0.490 | 0.302 |
+| WikiText-2 | AWP | 302 | 0.332 | 0.244 | 0.285 | 0.528 | 0.510 | 0.380 |
 | WikiText-2 | SparseGPT | 29.6 | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | 0.492 |
 | WikiText-2 | OBS-cancel-block | 25.5 | 0.561 | 0.247 | 0.345 | 0.662 | 0.512 | 0.465 |
 | C4 | Wanda | 4,051 | 0.271 | 0.275 | 0.267 | 0.502 | 0.489 | 0.300 |
 | C4 | RIA | 2,357 | 0.270 | 0.267 | 0.272 | 0.515 | 0.496 | 0.303 |
+| C4 | AWP | pending | — | — | — | — | — | — |
 | C4 | SparseGPT | 31.0 | 0.505 | 0.298 | 0.429 | 0.678 | 0.517 | 0.435 |
 | C4 | **OBS-cancel-block** | **26.3** | **0.519** | 0.291 | 0.426 | 0.663 | **0.541** | **0.443** |
 
 **Key finding:** With C4 calibration, OBS-cancel-block outperforms SparseGPT on **both** PPL (26.3 vs 31.0) and downstream task accuracy (0.443 vs 0.435). The task accuracy advantage SparseGPT had under WikiText-2 calibration disappears when calibration data is not drawn from the same distribution as the test set. This confirms the PPL–accuracy gap is a calibration-data artefact: WikiText-2 calibration gives SparseGPT's column-ordered mask an incidental advantage on WikiText-2-adjacent tasks, while OBS-cancel-block's superior cross-weight cancellation generalises better to a held-out calibration distribution.
 
-Correction-based methods (SparseGPT, OBS-cancel-block) degrade in absolute terms under C4 calibration because the activation covariance estimated from web text is a poorer match for the WikiText-2 evaluation distribution. The relative ordering reversal is the meaningful signal. No-correction methods (Wanda, RIA) are effectively insensitive to calibration data choice — they collapse to PPL 2,105–4,051 regardless, and downstream accuracy hovers near random (0.296–0.303) in both cases. This confirms that calibration data only matters when the pruning method can actually exploit the activation statistics via weight correction.
+AWP with WikiText-2 calibration collapses to PPL 302 at this scale, in line with the main results. C4-calibrated AWP is pending. No-correction methods (Wanda, RIA) are effectively insensitive to calibration data choice — they collapse regardless, and downstream accuracy hovers near random (0.296–0.303) in both cases. This confirms that calibration data only matters when the pruning method can actually exploit the activation statistics via weight correction.
 
 ## Block size sweep (1B, 50% sparsity)
 
