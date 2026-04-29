@@ -234,6 +234,18 @@ is a preliminary from a different calibration dataset; C4 fine-tuning results
 for one-shot and non-uniform models are pending. LAMBADA collapses to zero across
 all 80% methods.
 
+**Failed approach — L1-ramp proximal gradient fine-tuning:** An earlier attempt
+used ISTA-style soft-thresholding with a gradually ramped L1 penalty
+(λ: 0 → 1e-4 over 20k steps) to drive additional sparsity during recovery.
+This catastrophically destroyed the OBS-optimized weights: the L1 penalty
+zeroed small-magnitude weights that OBS-cancel-block had specifically retained
+for cancellation of correlated input channels. PPL exploded from 19 → 2,089
+(50% model) and 1,952 → 569,000 (80% model). The models were unrecoverable.
+Root cause: soft-thresholding is magnitude-blind to OBS cancellation structure —
+a weight near zero may carry disproportionate information when paired with a
+correlated channel. Mask-fixed fine-tuning and distillation (which freeze the
+zero pattern entirely) avoid this failure mode.
+
 ## Model weights
 
 Dense and pruned model weights are available on the Hugging Face Hub under [`ikimyaii`](https://huggingface.co/ikimyaii).
