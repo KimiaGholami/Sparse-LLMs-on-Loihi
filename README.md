@@ -220,16 +220,19 @@ re-zeroed after each optimizer step):
 |-------|-----|-------|-------|-----------|------|------------|---------|---------|
 | `hgrn-1.3B-dense-baseline` | 14.18 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
 | OBS-cancel-block (one-shot) | 1,952 | 0.269 | 0.222 | 0.258 | 0.527 | 0.491 | 0.000 | 0.294 |
-| OBS-cancel-block + distill | 614 | 0.284 | 0.268 | 0.259 | 0.521 | 0.516 | 0.001 | 0.370 |
-| Non-uniform + distill | **225** | 0.286 | 0.230 | 0.265 | 0.524 | 0.484 | 0.000 | 0.358 |
-| Iterative + distill | 258 | 0.285 | 0.253 | 0.261 | 0.521 | 0.510 | 0.000 | 0.366 |
+| OBS-cancel-block + distill (C4) | 614 | 0.284 | 0.268 | 0.259 | 0.521 | 0.516 | 0.001 | 0.370 |
+| Non-uniform + distill (C4) | **225** | 0.286 | 0.230 | 0.265 | 0.524 | 0.484 | 0.000 | 0.358 |
+| Iterative + distill (C4) | 258 | 0.285 | 0.253 | 0.261 | 0.521 | 0.510 | 0.000 | 0.366 |
+| OBS-cancel-block + FT (WikiText-2, 20k steps) | 605 | 0.278 | 0.273 | 0.260 | 0.511 | 0.504 | 0.000 | 0.365 |
 
 Non-uniform applies a U-shaped per-layer sparsity profile (65–85%, protecting
 first/last layers); iterative prunes in stages (30%→50%→65%→80%) with
-distillation between each stage. Despite large PPL differences, all recovery
+distillation between each stage. Despite large PPL differences, all distillation
 methods converge to similar task accuracy (0.358–0.370), indicating an 80%
-sparsity capacity ceiling for this model size. LAMBADA collapses to zero across
-all 80% methods. Fine-tuning results pending.
+sparsity capacity ceiling for this model size. The WikiText-2 fine-tuning result
+is a preliminary from a different calibration dataset; C4 fine-tuning results
+for one-shot and non-uniform models are pending. LAMBADA collapses to zero across
+all 80% methods.
 
 ## Model weights
 
