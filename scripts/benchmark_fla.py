@@ -13,9 +13,15 @@ import sys
 # Register FLA types before lm_eval touches anything
 import fla  # noqa
 from fla.models.transformer import TransformerConfig, TransformerForCausalLM
+from fla.models.hgrn import HGRNConfig, HGRNForCausalLM
+from fla.models.hgrn2 import HGRN2Config, HGRN2ForCausalLM
 from transformers import AutoConfig, AutoModelForCausalLM
 AutoConfig.register("transformer", TransformerConfig, exist_ok=True)
 AutoModelForCausalLM.register(TransformerConfig, TransformerForCausalLM, exist_ok=True)
+AutoConfig.register("hgrn", HGRNConfig, exist_ok=True)
+AutoModelForCausalLM.register(HGRNConfig, HGRNForCausalLM, exist_ok=True)
+AutoConfig.register("hgrn2", HGRN2Config, exist_ok=True)
+AutoModelForCausalLM.register(HGRN2Config, HGRN2ForCausalLM, exist_ok=True)
 
 import lm_eval
 from lm_eval import evaluator

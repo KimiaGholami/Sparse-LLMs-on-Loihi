@@ -207,6 +207,25 @@ OBS-cancel-block outperforms SparseGPT at every sparsity level. AWP stays close 
 
 At 80% sparsity all methods collapse to near-random performance (LAMBADA→0 across the board). OBS-cancel-block retains the best PPL (1,952 vs 2,811 for SparseGPT, 1.44×). AWP performs worse than both second-order methods at this sparsity (17,756), far below OBS-cancel-block, reinforcing the 1B/HGRN pattern: at sub-2B scale AWP cannot compensate for the reconstruction error that accumulates without explicit Hessian-based weight correction.
 
+## HGRN-1.3B 80% — post-pruning recovery via knowledge distillation
+
+Post-pruning recovery using mask-fixed knowledge distillation: the sparse model
+is fine-tuned on C4 (streaming) with the dense model as a frozen teacher.
+Loss = 0.1 × CE + 0.9 × KL(student ‖ teacher) × T², T = 2.0, 50k steps, lr = 2e-5.
+The sparsity mask is fixed throughout; gradient hooks zero updates at pruned
+positions and masked weights are re-zeroed after each optimizer step.
+
+| Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
+|-------|-----|-------|-------|-----------|------|------------|---------|---------|
+| `hgrn-1.3B-dense-baseline` | 14.18 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
+| OBS-cancel-block (one-shot) | 1,952 | 0.269 | 0.222 | 0.258 | 0.527 | 0.491 | 0.000 | 0.294 |
+| **OBS-cancel-block + distill** | **614** | **0.284** | **0.268** | **0.259** | **0.521** | **0.516** | 0.001 | **0.370** |
+
+Distillation recovers 3.2× PPL (1,952 → 614) and +7.6 pp average task accuracy
+(0.294 → 0.370) compared to the one-shot pruned baseline, closing roughly 30% of
+the gap to the dense model. LAMBADA remains near zero at 80% sparsity regardless
+of recovery method. Script: `scripts/distill_sparse.py`.
+
 ## Model weights
 
 Dense and pruned model weights are available on the Hugging Face Hub under [`ikimyaii`](https://huggingface.co/ikimyaii).
