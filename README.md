@@ -225,6 +225,7 @@ re-zeroed after each optimizer step):
 | Iterative + distill (C4) | 258 | 0.285 | 0.253 | 0.261 | 0.521 | 0.510 | 0.000 | 0.366 |
 | OBS-cancel-block + FT (C4, 20k steps) | 943 | 0.282 | 0.267 | 0.257 | 0.511 | 0.522 | 0.000 | 0.368 |
 | Non-uniform + FT (C4, 20k steps) | 384 | 0.290 | 0.258 | 0.264 | 0.509 | 0.499 | 0.000 | 0.364 |
+| OBS-cancel-block + dynamic-mask FT (C4, 20k steps) | 1,115 | 0.288 | 0.272 | 0.255 | 0.510 | 0.507 | 0.000 | 0.366 |
 | OBS-cancel-block + FT (WikiText-2, 20k steps)† | 605 | 0.278 | 0.273 | 0.260 | 0.511 | 0.504 | 0.000 | 0.365 |
 
 † Preliminary result using a different calibration dataset.
@@ -236,8 +237,11 @@ fine-tuning alike — converge to similar task accuracy (0.358–0.370), confirm
 an 80% sparsity capacity ceiling for this model size. Fine-tuning achieves
 comparable task accuracy to distillation but at much higher PPL (943 vs 614 for
 one-shot; 384 vs 225 for non-uniform), reflecting the value of the teacher's
-soft targets for language-model quality. LAMBADA collapses to zero across all
-80% methods.
+soft targets for language-model quality. Dynamic-mask fine-tuning (magnitude
+thresholding per row after each step, allowing weights to rewire) reaches
+similar task accuracy (0.366) but worse PPL (1,115) than mask-fixed FT (943),
+because overriding the OBS-optimized mask with magnitude thresholding discards
+the cancellation structure. LAMBADA collapses to zero across all 80% methods.
 
 **Failed approach — L1-ramp proximal gradient fine-tuning:** An earlier attempt
 used ISTA-style soft-thresholding with a gradually ramped L1 penalty
