@@ -226,11 +226,13 @@ re-zeroed after each optimizer step):
 | OBS-cancel-block + FT (C4, 20k steps) | 943 | 0.282 | 0.267 | 0.257 | 0.511 | 0.522 | 0.000 | 0.368 |
 | Non-uniform + FT (C4, 20k steps) | 384 | 0.290 | 0.258 | 0.264 | 0.509 | 0.499 | 0.000 | 0.364 |
 | OBS-cancel-block + dynamic-mask FT (C4, 20k steps) | 1,115 | 0.288 | 0.272 | 0.255 | 0.510 | 0.507 | 0.000 | 0.366 |
+| OBS-cancel-block + distill + LoRA | — | 0.290 | 0.201 | 0.263 | 0.539 | 0.486 | 0.001 | 0.356 |
+| Non-uniform + FT + LoRA | — | 0.309 | 0.218 | 0.265 | 0.551 | 0.508 | 0.001 | **0.370** |
 
 Non-uniform applies a U-shaped per-layer sparsity profile (65–85%, protecting
 first/last layers); iterative prunes in stages (30%→50%→65%→80%) with
-distillation between each stage. All recovery methods — distillation and
-fine-tuning alike — converge to similar task accuracy (0.358–0.370), confirming
+distillation between each stage. All recovery methods — distillation, fine-tuning,
+and LoRA — converge to similar task accuracy (0.356–0.370), confirming
 an 80% sparsity capacity ceiling for this model size. Fine-tuning achieves
 comparable task accuracy to distillation but at much higher PPL (943 vs 614 for
 one-shot; 384 vs 225 for non-uniform), reflecting the value of the teacher's
