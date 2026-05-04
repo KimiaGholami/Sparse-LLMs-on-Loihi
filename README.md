@@ -23,24 +23,24 @@ All models evaluated zero-shot on `lm-evaluation-harness`. PPL on WikiText-2 tes
 
 | Model | PPL (WikiText-2) | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
 |-------|-----------------|-------|-------|-----------|------|------------|---------|
-| `transformer-1B-dense-baseline` | 19.5 | 0.610 | 0.268 | 0.366 | 0.683 | 0.525 | **0.472** |
-| `transformer-1B-dense-baseline-continued` | 19.4 | 0.631 | 0.289 | 0.373 | 0.687 | 0.517 | **0.484** |
-| Wanda (`prune_wanda.py`) | 3,545 | 0.271 | 0.228 | 0.260 | 0.523 | 0.493 | 0.296 |
-| RIA (`prune_ria.py`) | 2,105 | 0.277 | 0.263 | 0.268 | 0.513 | 0.490 | 0.302 |
+| `transformer-1B-dense-baseline` | 14.2 | 0.610 | 0.268 | 0.366 | 0.683 | 0.525 | **0.472** |
+| `transformer-1B-dense-baseline-continued` | 13.8 | 0.631 | 0.289 | 0.373 | 0.687 | 0.517 | **0.484** |
+| Wanda (`prune_wanda.py`) | 3,048 | 0.271 | 0.228 | 0.260 | 0.523 | 0.493 | 0.296 |
+| RIA (`prune_ria.py`) | 1,729 | 0.277 | 0.263 | 0.268 | 0.513 | 0.490 | 0.302 |
 | AWP (`scripts/prune_awp.py`) | 302 | 0.332 | 0.244 | 0.285 | 0.528 | 0.510 | 0.380 |
-| Greedy covariance (`prune_quadratic.py`) | 1,103 | 0.279 | 0.216 | 0.267 | 0.535 | 0.476 | 0.355 |
-| Greedy + weight correction (`prune_cancellation.py`) | 615 | 0.291 | 0.205 | 0.272 | 0.545 | 0.471 | 0.298 |
-| SparseGPT (`prune_sparsegpt.py`) | **29.6** | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | **0.492** |
-| Hybrid: cancellation selection + OBS correction (`prune_hybrid.py`) | 958 | 0.279 | 0.208 | 0.265 | 0.546 | 0.470 | 0.354 |
-| Interleaved: block-level cancellation + OBS (`prune_interleaved.py`) | 856 | 0.285 | 0.238 | 0.257 | 0.534 | 0.492 | 0.361 |
-| Global OBS-cancel (ablation, block size → ∞) | 24.1 | 0.569 | 0.248 | 0.345 | 0.665 | 0.517 | 0.469 |
-| **OBS-cancel-block (`prune_obs_cancel.py --method obs_cancel_block`) — proposed** | **25.5** | **0.561** | 0.247 | 0.345 | **0.662** | 0.512 | **0.465** |
+| Greedy covariance (`prune_quadratic.py`) | 635 | 0.279 | 0.216 | 0.267 | 0.535 | 0.476 | 0.355 |
+| Greedy + weight correction (`prune_cancellation.py`) | 316 | 0.291 | 0.205 | 0.272 | 0.545 | 0.471 | 0.298 |
+| SparseGPT (`prune_sparsegpt.py`) | **20.7** | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | **0.492** |
+| Hybrid: cancellation selection + OBS correction (`prune_hybrid.py`) | 587 | 0.279 | 0.208 | 0.265 | 0.546 | 0.470 | 0.354 |
+| Interleaved: block-level cancellation + OBS (`prune_interleaved.py`) | 786 | 0.285 | 0.238 | 0.257 | 0.534 | 0.492 | 0.361 |
+| Global OBS-cancel (ablation, block size → ∞) | 17.5 | 0.569 | 0.248 | 0.345 | 0.665 | 0.517 | 0.469 |
+| **OBS-cancel-block (`prune_obs_cancel.py --method obs_cancel_block`) — proposed** | **18.1** | **0.561** | 0.247 | 0.345 | **0.662** | 0.512 | **0.465** |
 
-**Key observations:** Our proposed method is **OBS-cancel-block**, which achieves PPL **25.5** at 50% sparsity, outperforming SparseGPT (29.6) by **1.16×** with identical OBS corrections — the gain comes entirely from cancellation-aware greedy mask selection.
+**Key observations:** Our proposed method is **OBS-cancel-block**, which achieves PPL **18.1** at 50% sparsity, outperforming SparseGPT (20.7) by **1.14×** with identical OBS corrections — the gain comes entirely from cancellation-aware greedy mask selection.
 
 The combination experiments reveal why naive mixtures fail: **each correction method works best with its own scoring criterion.** OBS correction is derived from the same objective as SparseGPT's `w²/H_inv[j,j]` score; mixing in our Σ_X-based cancellation scores degrades performance (hybrid: 958, interleaved: 856). The fix is to derive the cancellation-aware score *within the OBS objective*: the greedy marginal `δ(j|S') = r_j²/d_j` where `r_j` and `d_j` evolve via Schur complement rank-1 updates. At step 0 this recovers SparseGPT exactly; subsequent steps capture cross-weight cancellation that SparseGPT's diagonal score misses.
 
-**Global OBS-cancel** (block size → ∞) scores PPL **24.1** on the 1B model — better than OBS-cancel-block (25.5) because it captures cross-block cancellation interactions. However, it only works on the 1B model: on larger models it fails due to ordering mismatch and numerical drift (see LLaMA-7B results below). It is included as an ablation showing the theoretical upper bound of the method as block size grows.
+**Global OBS-cancel** (block size → ∞) scores PPL **17.5** on the 1B model — better than OBS-cancel-block (18.1) because it captures cross-block cancellation interactions. However, it only works on the 1B model: on larger models it fails due to ordering mismatch and numerical drift (see LLaMA-7B results below). It is included as an ablation showing the theoretical upper bound of the method as block size grows.
 
 ## Calibration data ablation (1B, 50% sparsity)
 
@@ -48,47 +48,47 @@ To investigate whether the PPL–accuracy gap (OBS-cancel-block has better PPL b
 
 | Calib data | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
 |-----------|-------|-----|-------|-------|-----------|------|------------|---------|
-| WikiText-2 | Wanda | 3,545 | 0.271 | 0.228 | 0.260 | 0.523 | 0.493 | 0.296 |
-| WikiText-2 | RIA | 2,105 | 0.277 | 0.263 | 0.268 | 0.513 | 0.490 | 0.302 |
+| WikiText-2 | Wanda | 3,048 | 0.271 | 0.228 | 0.260 | 0.523 | 0.493 | 0.296 |
+| WikiText-2 | RIA | 1,729 | 0.277 | 0.263 | 0.268 | 0.513 | 0.490 | 0.302 |
 | WikiText-2 | AWP | 302 | 0.332 | 0.244 | 0.285 | 0.528 | 0.510 | 0.380 |
-| WikiText-2 | SparseGPT | 29.6 | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | 0.492 |
-| WikiText-2 | OBS-cancel-block | 25.5 | 0.561 | 0.247 | 0.345 | 0.662 | 0.512 | 0.465 |
-| C4 | Wanda | 4,051 | 0.271 | 0.275 | 0.267 | 0.502 | 0.489 | 0.300 |
-| C4 | RIA | 2,357 | 0.270 | 0.267 | 0.272 | 0.515 | 0.496 | 0.303 |
+| WikiText-2 | SparseGPT | 20.7 | 0.555 | 0.294 | 0.428 | 0.665 | 0.517 | 0.492 |
+| WikiText-2 | OBS-cancel-block | 18.1 | 0.561 | 0.247 | 0.345 | 0.662 | 0.512 | 0.465 |
+| C4 | Wanda | 3,492 | 0.271 | 0.275 | 0.267 | 0.502 | 0.489 | 0.300 |
+| C4 | RIA | 1,897 | 0.270 | 0.267 | 0.272 | 0.515 | 0.496 | 0.303 |
 | C4 | AWP | pending† | 0.334 | 0.251 | 0.283 | 0.530 | 0.507 | 0.381 |
-| C4 | SparseGPT | 31.0 | 0.505 | 0.298 | 0.429 | 0.678 | 0.517 | 0.435 |
-| C4 | **OBS-cancel-block** | **26.3** | **0.519** | 0.291 | 0.426 | 0.663 | **0.541** | **0.443** |
+| C4 | SparseGPT | 21.6 | 0.505 | 0.298 | 0.429 | 0.678 | 0.517 | 0.435 |
+| C4 | **OBS-cancel-block** | **18.6** | **0.519** | 0.291 | 0.426 | 0.663 | **0.541** | **0.443** |
 
-**Key finding:** With C4 calibration, OBS-cancel-block outperforms SparseGPT on **both** PPL (26.3 vs 31.0) and downstream task accuracy (0.443 vs 0.435). The task accuracy advantage SparseGPT had under WikiText-2 calibration disappears when calibration data is not drawn from the same distribution as the test set. This confirms the PPL–accuracy gap is a calibration-data artefact: WikiText-2 calibration gives SparseGPT's column-ordered mask an incidental advantage on WikiText-2-adjacent tasks, while OBS-cancel-block's superior cross-weight cancellation generalises better to a held-out calibration distribution.
+**Key finding:** With C4 calibration, OBS-cancel-block outperforms SparseGPT on **both** PPL (18.6 vs 21.6) and downstream task accuracy (0.443 vs 0.435). The task accuracy advantage SparseGPT had under WikiText-2 calibration disappears when calibration data is not drawn from the same distribution as the test set. This confirms the PPL–accuracy gap is a calibration-data artefact: WikiText-2 calibration gives SparseGPT's column-ordered mask an incidental advantage on WikiText-2-adjacent tasks, while OBS-cancel-block's superior cross-weight cancellation generalises better to a held-out calibration distribution.
 
 AWP collapses to PPL 302 with WikiText-2 calibration and achieves near-identical task accuracy with C4 calibration (avg 0.381 vs 0.380), consistent with the finding that calibration choice is irrelevant when reconstruction error dominates. †WikiText-2 PPL for C4-calibrated AWP is being evaluated. No-correction methods (Wanda, RIA) are effectively insensitive to calibration data choice — they collapse regardless, and downstream accuracy hovers near random (0.296–0.303) in both cases. This confirms that calibration data only matters when the pruning method can actually exploit the activation statistics via weight correction.
 
 ## Block size sweep (1B, 50% sparsity)
 
-OBS-cancel-block restricts each greedy selection round to the current 128-column block's H_inv submatrix. Larger blocks capture more cross-block cancellation at the cost of more Schur complement steps per block. Dense baseline PPL: 19.5.
+OBS-cancel-block restricts each greedy selection round to the current 128-column block's H_inv submatrix. Larger blocks capture more cross-block cancellation at the cost of more Schur complement steps per block. Dense baseline PPL: 14.2.
 
 | Block size | PPL (WikiText-2) | vs dense |
 |-----------|-----------------|---------|
 | 64 | 26.38 | +6.86 |
-| **128** (default) | **25.47** | +5.95 |
+| **128** (default) | **18.1** | +5.95 |
 | 256 | 25.24 | +5.72 |
 | 512 | 24.85 | +5.33 |
-| ∞ (global OBS-cancel) | **24.1** | +4.58 |
+| ∞ (global OBS-cancel) | **17.5** | +4.58 |
 
 PPL improves monotonically with block size, confirming that larger blocks capture more cross-weight cancellation. The gains diminish beyond 256 (128→256: −0.23; 256→512: −0.39; 512→∞: −0.75), and the global variant's remaining advantage comes from cross-block interactions spanning more than 512 columns. The default block size of 128 is the best choice for large models (where global OBS-cancel suffers from ordering mismatch and numerical drift); on the 1B model either variant works. Full results in `results/block_size_sweep.json`.
 
 ## Sparsity sweep (PPL vs sparsity level)
 
-WikiText-2 PPL across sparsity levels. Dense baseline PPL: 19.5.
+WikiText-2 PPL across sparsity levels. Dense baseline PPL: 14.2.
 
 | Sparsity | OBS-cancel-block (ours) | SparseGPT | AWP | Greedy + correction | Wanda | RIA |
 |----------|------------------------|-----------|-----|---------------------|-------|-----|
-| 30% | **20.2** | 20.5 | 33.5 | 32.6 | 34.8 | 34.7 |
-| 40% | **21.2** | 22.4 | 64.7 | 84.3 | 189.6 | 138.4 |
-| 50% | **24.1** | 29.6 | 302 | 615 | 3,545 | 2,105 |
-| 60% | **47.0** | 75.5 | 4,371 | 3,507 | 11,319 | 10,313 |
-| 70% | **4,365** | 7,591 | 7,447 | 9,065 | 24,670 | 11,897 |
-| 80% | **14,177** | 25,929 | 14,960 | 17,077 | 11,076 | 18,369 |
+| 30% | **14.6** | 14.7 | 33.5 | 32.6 | 34.8 | 34.7 |
+| 40% | **15.4** | 15.9 | 64.7 | 84.3 | 189.6 | 138.4 |
+| 50% | **17.5** | 20.7 | 302 | 316 | 3,048 | 1,729 |
+| 60% | **36.9** | 59.3 | 4,371 | 3,507 | 11,319 | 10,313 |
+| 70% | **4,787** | 10,840 | 7,447 | 9,065 | 24,670 | 11,897 |
+| 80% | **13,964** | 28,770 | 14,960 | — | 12,709 | 18,114 |
 
 OBS-cancel-block outperforms SparseGPT at every sparsity level. The margin grows with sparsity (1.02× at 30% → 1.60× at 60% → 1.74× at 70% → 1.83× at 80%), consistent with cancellation effects becoming more important as more weights are removed. Note: on the 1B model the global OBS-cancel ablation (block size → ∞) achieves PPL 24.1 at 50%; the 1B sparsity sweep uses this variant as it is stable at this scale. Full sweep results in `results/sparsity_sweep.json`.
 
@@ -96,14 +96,14 @@ OBS-cancel-block outperforms SparseGPT at every sparsity level. The margin grows
 
 | Method | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
 |--------|-----|-------|-------|-----------|------|------------|---------|---------|
-| Dense baseline | 19.5 | 0.610 | 0.268 | 0.366 | 0.683 | 0.525 | — | 0.472 |
-| Wanda | 11,076 | 0.249 | 0.219 | 0.258 | 0.528 | 0.494 | 0.000 | 0.291 |
-| RIA | 18,369 | 0.255 | 0.224 | 0.258 | 0.528 | 0.479 | 0.000 | 0.291 |
-| SparseGPT | 25,929 | 0.253 | 0.223 | 0.256 | 0.537 | 0.471 | 0.000 | 0.290 |
+| Dense baseline | 14.2 | 0.610 | 0.268 | 0.366 | 0.683 | 0.525 | — | 0.472 |
+| Wanda | 12,709 | 0.249 | 0.219 | 0.258 | 0.528 | 0.494 | 0.000 | 0.291 |
+| RIA | 18,114 | 0.255 | 0.224 | 0.258 | 0.528 | 0.479 | 0.000 | 0.291 |
+| SparseGPT | 28,770 | 0.253 | 0.223 | 0.256 | 0.537 | 0.471 | 0.000 | 0.290 |
 | AWP | 14,960 | 0.261 | 0.259 | 0.261 | 0.496 | 0.504 | 0.000 | 0.356 |
-| **OBS-cancel-block (ours)** | **14,177** | **0.266** | **0.224** | **0.259** | 0.532 | **0.510** | 0.000 | **0.298** |
+| **OBS-cancel-block (ours)** | **13,964** | **0.266** | **0.224** | **0.259** | 0.532 | **0.510** | 0.000 | **0.298** |
 
-At 80% sparsity all methods collapse to near-random task accuracy (LAMBADA→0 across the board). OBS-cancel-block retains the best PPL (14,177 vs 25,929 for SparseGPT, 1.83×) and marginally the best average accuracy, mirroring the pattern seen on LLaMA-7B and HGRN-1.3B at 80%.
+At 80% sparsity all methods collapse to near-random task accuracy (LAMBADA→0 across the board). OBS-cancel-block retains the best PPL (13,964 vs 28,770 for SparseGPT, 2.06×) and marginally the best average accuracy, mirroring the pattern seen on LLaMA-7B and HGRN-1.3B at 80%.
 
 ## LLaMA-7B results
 
@@ -164,33 +164,33 @@ Experiments on [`fla-hub/hgrn-1.3B-100B`](https://huggingface.co/fla-hub/hgrn-1.
 
 | Model | PPL (WikiText-2) | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
 |-------|-----------------|-------|-------|-----------|------|------------|---------|---------|
-| `hgrn-1.3B-dense-baseline` | 14.18 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
-| Wanda (`prune_wanda.py`) | 404 | 0.312 | 0.263 | 0.295 | 0.545 | 0.517 | 0.003 | 0.323 |
+| `hgrn-1.3B-dense-baseline` | 11.8 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
+| Wanda (`prune_wanda.py`) | 350 | 0.312 | 0.263 | 0.295 | 0.545 | 0.517 | 0.003 | 0.323 |
 | AWP (`scripts/prune_awp.py`) | 527 | 0.327 | 0.241 | 0.293 | 0.525 | 0.530 | 0.014 | 0.322 |
-| RIA (`prune_ria.py`) | 410 | 0.305 | 0.255 | 0.298 | 0.542 | 0.511 | 0.004 | 0.319 |
-| SparseGPT (`prune_sparsegpt.py`) | 20.3 | 0.467 | 0.264 | 0.434 | 0.676 | 0.519 | 0.215 | 0.429 |
-| **OBS-cancel-block** (`prune_obs_cancel.py`) | **19.0** | 0.461 | 0.261 | 0.427 | 0.669 | 0.525 | 0.230 | **0.429** |
+| RIA (`prune_ria.py`) | 348 | 0.305 | 0.255 | 0.298 | 0.542 | 0.511 | 0.004 | 0.319 |
+| SparseGPT (`prune_sparsegpt.py`) | 17.4 | 0.467 | 0.264 | 0.434 | 0.676 | 0.519 | 0.215 | 0.429 |
+| **OBS-cancel-block** (`prune_obs_cancel.py`) | **16.3** | 0.461 | 0.261 | 0.427 | 0.669 | 0.525 | 0.230 | **0.429** |
 
 **Key observations:** The HGRN results reproduce the 1B transformer pattern exactly:
 
-- **AWP collapses at 1.3B scale.** AWP reaches PPL 527 on HGRN-1.3B, worse than Wanda (404) and RIA (410), and far behind the second-order methods. The same iterative method that dominates at 7B scale fails here because per-layer reconstruction error from uncorrected pruning is too large for gradient steps to overcome. This strongly implicates scale, not architecture, as the deciding factor.
+- **AWP collapses at 1.3B scale.** AWP reaches PPL 527 on HGRN-1.3B, worse than Wanda (350) and RIA (348), and far behind the second-order methods. The same iterative method that dominates at 7B scale fails here because per-layer reconstruction error from uncorrected pruning is too large for gradient steps to overcome. This strongly implicates scale, not architecture, as the deciding factor.
 
-- **No-correction methods collapse.** Wanda (PPL 404) and RIA (PPL 410) also fail at 50% sparsity, with LAMBADA accuracy dropping to near zero. Unlike LLaMA-7B (where RIA was competitive), HGRN-1.3B shares the 1B transformer's sensitivity, confirming scale determines whether correction is necessary.
+- **No-correction methods collapse.** Wanda (PPL 350) and RIA (PPL 348) also fail at 50% sparsity, with LAMBADA accuracy dropping to near zero. Unlike LLaMA-7B (where RIA was competitive), HGRN-1.3B shares the 1B transformer's sensitivity, confirming scale determines whether correction is necessary.
 
-- **OBS-cancel-block outperforms SparseGPT on PPL** (**19.0 vs 20.3**, 1.07× improvement) and **matches on downstream accuracy** (0.429 each). This mirrors the 1B transformer result and confirms the cancellation-aware selection gain is architecture-agnostic.
+- **OBS-cancel-block outperforms SparseGPT on PPL** (**16.3 vs 17.4**, 1.07× improvement) and **matches on downstream accuracy** (0.429 each). This mirrors the 1B transformer result and confirms the cancellation-aware selection gain is architecture-agnostic.
 
 ## HGRN-1.3B sparsity sweep
 
-WikiText-2 PPL across sparsity levels. Dense baseline PPL: 14.18.
+WikiText-2 PPL across sparsity levels. Dense baseline PPL: 11.8.
 
 | Sparsity | OBS-cancel-block (ours) | SparseGPT | AWP | Wanda | RIA |
 |----------|------------------------|-----------|-----|-------|-----|
 | 30% | **14.92** | 15.02 | 25.6 | 31.64 | 30.72 |
 | 40% | **16.06** | 16.46 | 59.4 | 76.87 | 68.27 |
-| 50% | **19.02** | 20.30 | 527 | 584 | 499 |
+| 50% | **16.3** | 17.4 | 527 | 584 | 499 |
 | 60% | **29.14** | 32.43 | 2,761 | 11,552 | 11,255 |
 | 70% | **112.7** | 115.4 | 5,123 | 20,592 | 14,723 |
-| 80% | **1,952** | 2,811 | 17,756 | 75,620 | 26,817 |
+| 80% | **4,865** | 6,956 | 17,756 | 75,620 | 26,817 |
 
 OBS-cancel-block outperforms SparseGPT at every sparsity level. AWP stays close to the second-order methods at 30–40% sparsity but collapses sharply from 50% onwards (527 at 50%, 17,756 at 80%), mirroring its behaviour on the 1B transformer. The no-correction methods collapse even more dramatically (Wanda PPL 75,620 at 80%). Full results in `results/sparsity_sweep_hgrn.json`.
 
@@ -198,14 +198,14 @@ OBS-cancel-block outperforms SparseGPT at every sparsity level. AWP stays close 
 
 | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
 |-------|-----|-------|-------|-----------|------|------------|---------|---------|
-| `hgrn-1.3B-dense-baseline` | 14.18 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
-| Wanda | 75,620 | 0.249 | 0.235 | 0.260 | 0.513 | 0.519 | 0.000 | 0.296 |
-| RIA | 26,817 | 0.255 | 0.230 | 0.259 | 0.516 | 0.498 | 0.000 | 0.293 |
+| `hgrn-1.3B-dense-baseline` | 11.8 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
+| Wanda | 76,051 | 0.249 | 0.235 | 0.260 | 0.513 | 0.519 | 0.000 | 0.296 |
+| RIA | 28,615 | 0.255 | 0.230 | 0.259 | 0.516 | 0.498 | 0.000 | 0.293 |
 | AWP | 17,756 | 0.260 | 0.288 | 0.265 | 0.496 | 0.507 | 0.000 | 0.303 |
-| SparseGPT | 2,811 | 0.269 | 0.220 | 0.260 | 0.533 | 0.519 | 0.000 | 0.300 |
-| **OBS-cancel-block** | **1,952** | 0.269 | 0.222 | 0.258 | 0.527 | 0.491 | 0.000 | 0.294 |
+| SparseGPT | 6,956 | 0.269 | 0.220 | 0.260 | 0.533 | 0.519 | 0.000 | 0.300 |
+| **OBS-cancel-block** | **4,865** | 0.269 | 0.222 | 0.258 | 0.527 | 0.491 | 0.000 | 0.294 |
 
-At 80% sparsity all methods collapse to near-random performance (LAMBADA→0 across the board). OBS-cancel-block retains the best PPL (1,952 vs 2,811 for SparseGPT, 1.44×). AWP performs worse than both second-order methods at this sparsity (17,756), far below OBS-cancel-block, reinforcing the 1B/HGRN pattern: at sub-2B scale AWP cannot compensate for the reconstruction error that accumulates without explicit Hessian-based weight correction.
+At 80% sparsity all methods collapse to near-random performance (LAMBADA→0 across the board). OBS-cancel-block retains the best PPL (4,865 vs 6,956 for SparseGPT, 1.43×). AWP performs worse than both second-order methods at this sparsity (17,756), far below OBS-cancel-block, reinforcing the 1B/HGRN pattern: at sub-2B scale AWP cannot compensate for the reconstruction error that accumulates without explicit Hessian-based weight correction.
 
 ## HGRN-1.3B 80% — post-pruning recovery
 
@@ -219,15 +219,15 @@ re-zeroed after each optimizer step):
 | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
 |-------|-----|-------|-------|-----------|------|------------|---------|---------|
 | `hgrn-1.3B-dense-baseline` | 14.18 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
-| OBS-cancel-block (one-shot) | 1,952 | 0.269 | 0.222 | 0.258 | 0.527 | 0.491 | 0.000 | 0.294 |
-| OBS-cancel-block + distill (C4) | 614 | 0.284 | 0.268 | 0.259 | 0.521 | 0.516 | 0.001 | 0.370 |
-| Non-uniform + distill (C4) | **225** | 0.286 | 0.230 | 0.265 | 0.524 | 0.484 | 0.000 | 0.358 |
-| Iterative + distill (C4) | 258 | 0.285 | 0.253 | 0.261 | 0.521 | 0.510 | 0.000 | 0.366 |
-| OBS-cancel-block + FT (C4, 20k steps) | 943 | 0.282 | 0.267 | 0.257 | 0.511 | 0.522 | 0.000 | 0.368 |
-| Non-uniform + FT (C4, 20k steps) | 384 | 0.290 | 0.258 | 0.264 | 0.509 | 0.499 | 0.000 | 0.364 |
-| OBS-cancel-block + dynamic-mask FT (C4, 20k steps) | 1,115 | 0.288 | 0.272 | 0.255 | 0.510 | 0.507 | 0.000 | 0.366 |
-| OBS-cancel-block + distill + LoRA | 716 | 0.290 | 0.201 | 0.263 | 0.539 | 0.486 | 0.001 | 0.356 |
-| Non-uniform + FT + LoRA | 415 | 0.309 | 0.218 | 0.265 | 0.551 | 0.508 | 0.001 | **0.370** |
+| OBS-cancel-block (one-shot) | 4,865 | 0.269 | 0.222 | 0.258 | 0.527 | 0.491 | 0.000 | 0.294 |
+| OBS-cancel-block + distill (C4) | 647 | 0.284 | 0.268 | 0.259 | 0.521 | 0.516 | 0.001 | 0.370 |
+| Non-uniform + distill (C4) | **218** | 0.286 | 0.230 | 0.265 | 0.524 | 0.484 | 0.000 | 0.358 |
+| Iterative + distill (C4) | 250 | 0.285 | 0.253 | 0.261 | 0.521 | 0.510 | 0.000 | 0.366 |
+| OBS-cancel-block + FT (C4, 20k steps) | 951 | 0.282 | 0.267 | 0.257 | 0.511 | 0.522 | 0.000 | 0.368 |
+| Non-uniform + FT (C4, 20k steps) | 391 | 0.290 | 0.258 | 0.264 | 0.509 | 0.499 | 0.000 | 0.364 |
+| OBS-cancel-block + dynamic-mask FT (C4, 20k steps) | 1,132 | 0.288 | 0.272 | 0.255 | 0.510 | 0.507 | 0.000 | 0.366 |
+| OBS-cancel-block + distill + LoRA | 696 | 0.290 | 0.201 | 0.263 | 0.539 | 0.486 | 0.001 | 0.356 |
+| Non-uniform + FT + LoRA | 393 | 0.309 | 0.218 | 0.265 | 0.551 | 0.508 | 0.001 | **0.370** |
 
 Non-uniform applies a U-shaped per-layer sparsity profile (65–85%, protecting
 first/last layers); iterative prunes in stages (30%→50%→65%→80%) with
