@@ -90,7 +90,7 @@ WikiText-2 PPL across sparsity levels. Dense baseline PPL: 14.2.
 | 70% | **4,787** | 10,840 | 6,863 | 9,065 | 24,670 | 11,298 |
 | 80% | **13,964** | 28,770 | 12,912 | — | 12,709 | 18,114 |
 
-OBS-cancel-block outperforms SparseGPT at every sparsity level. The margin grows with sparsity (1.02× at 30% → 1.60× at 60% → 1.74× at 70% → 1.83× at 80%), consistent with cancellation effects becoming more important as more weights are removed. Note: on the 1B model the global OBS-cancel ablation (block size → ∞) achieves PPL 24.1 at 50%; the 1B sparsity sweep uses this variant as it is stable at this scale. Full sweep results in `results/sparsity_sweep.json`.
+OBS-cancel-block outperforms SparseGPT at every sparsity level. The margin grows with sparsity (1.02× at 30% → 1.60× at 60% → 2.26× at 70% → 2.06× at 80%), consistent with cancellation effects becoming more important as more weights are removed. Note: on the 1B model the global OBS-cancel ablation (block size → ∞) achieves PPL 24.1 at 50%; the 1B sparsity sweep uses this variant as it is stable at this scale. Full sweep results in `results/sparsity_sweep.json`.
 
 ## 1B transformer — 80% sparsity
 
