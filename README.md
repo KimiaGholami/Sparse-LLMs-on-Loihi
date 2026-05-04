@@ -67,15 +67,15 @@ AWP collapses to PPL 241.8 with WikiText-2 calibration and 290.1 with C4 calibra
 
 OBS-cancel-block restricts each greedy selection round to the current 128-column block's H_inv submatrix. Larger blocks capture more cross-block cancellation at the cost of more Schur complement steps per block. Dense baseline PPL: 14.2.
 
-| Block size | PPL (WikiText-2) | vs dense |
-|-----------|-----------------|---------|
-| 64 | 26.38 | +6.86 |
-| **128** (default) | **18.1** | +5.95 |
-| 256 | 25.24 | +5.72 |
-| 512 | 24.85 | +5.33 |
-| ∞ (global OBS-cancel) | **17.5** | +4.58 |
+| Block size | PPL (WikiText-2) | note |
+|-----------|-----------------|------|
+| 64 | 26.38 | †512-token eval |
+| **128** (default) | **18.1** | 2048-token eval |
+| 256 | 25.24 | †512-token eval |
+| 512 | 24.85 | †512-token eval |
+| ∞ (global OBS-cancel) | **17.5** | 2048-token eval |
 
-PPL improves monotonically with block size, confirming that larger blocks capture more cross-weight cancellation. The gains diminish beyond 256 (128→256: −0.23; 256→512: −0.39; 512→∞: −0.75), and the global variant's remaining advantage comes from cross-block interactions spanning more than 512 columns. The default block size of 128 is the best choice for large models (where global OBS-cancel suffers from ordering mismatch and numerical drift); on the 1B model either variant works. Full results in `results/block_size_sweep.json`.
+†Checkpoints for block sizes 64/256/512 were not saved; these values are from the original 512-token evaluation and are not directly comparable to the 128/∞ rows. Under the original methodology the monotonic trend (64: 26.38 → 128: 25.47 → 256: 25.24 → 512: 24.85 → ∞: 24.10) holds clearly. The default block size of 128 is the best choice for large models (where global OBS-cancel suffers from ordering mismatch and numerical drift); on the 1B model either variant works. Full results in `results/block_size_sweep.json`.
 
 ## Sparsity sweep (PPL vs sparsity level)
 
@@ -218,7 +218,7 @@ re-zeroed after each optimizer step):
 
 | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
 |-------|-----|-------|-------|-----------|------|------------|---------|---------|
-| `hgrn-1.3B-dense-baseline` | 14.18 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
+| `hgrn-1.3B-dense-baseline` | 11.8 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.481** |
 | OBS-cancel-block (one-shot) | 4,865 | 0.269 | 0.222 | 0.258 | 0.527 | 0.491 | 0.000 | 0.294 |
 | OBS-cancel-block + distill (C4) | 647 | 0.284 | 0.268 | 0.259 | 0.521 | 0.516 | 0.001 | 0.370 |
 | Non-uniform + distill (C4) | **218** | 0.286 | 0.230 | 0.265 | 0.524 | 0.484 | 0.000 | 0.358 |
