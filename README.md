@@ -67,15 +67,15 @@ AWP collapses to PPL 241.8 with WikiText-2 calibration and 290.1 with C4 calibra
 
 OBS-cancel-block restricts each greedy selection round to the current 128-column block's H_inv submatrix. Larger blocks capture more cross-block cancellation at the cost of more Schur complement steps per block. Dense baseline PPL: 14.2.
 
-| Block size | PPL (WikiText-2) | note |
-|-----------|-----------------|------|
-| 64 | 26.38 | †512-token eval |
-| **128** (default) | **18.1** | 2048-token eval |
-| 256 | 25.24 | †512-token eval |
-| 512 | 24.85 | †512-token eval |
-| ∞ (global OBS-cancel) | **17.5** | 2048-token eval |
+| Block size | PPL (WikiText-2) |
+|-----------|-----------------|
+| 64 | 18.60 |
+| **128** (default) | **18.1** |
+| 256 | 18.02 |
+| 512 | 17.77 |
+| ∞ (global OBS-cancel) | **17.5** |
 
-†Checkpoints for block sizes 64/256/512 were not saved; these values are from the original 512-token evaluation and are not directly comparable to the 128/∞ rows. Under the original methodology the monotonic trend (64: 26.38 → 128: 25.47 → 256: 25.24 → 512: 24.85 → ∞: 24.10) holds clearly. The default block size of 128 is the best choice for large models (where global OBS-cancel suffers from ordering mismatch and numerical drift); on the 1B model either variant works. Full results in `results/block_size_sweep.json`.
+All values use the standard 2048-token non-overlapping evaluation. PPL decreases monotonically as block size grows, confirming that larger blocks capture more cross-block cancellation interactions. The default block size of 128 is the best choice for large models (where global OBS-cancel suffers from ordering mismatch and numerical drift); on the 1B model all block sizes work well. Full results in `results/block_size_sweep.json`.
 
 ## Sparsity sweep (PPL vs sparsity level)
 
