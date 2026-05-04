@@ -187,10 +187,10 @@ WikiText-2 PPL across sparsity levels. Dense baseline PPL: 11.8.
 |----------|------------------------|-----------|-----|-------|-----|
 | 30% | **14.92** | 15.02 | 25.6 | 31.64 | 30.72 |
 | 40% | **16.06** | 16.46 | 59.4 | 76.87 | 68.27 |
-| 50% | **16.3** | 17.4 | 527 | 584 | 499 |
+| 50% | **16.3** | 17.4 | 527 | 584 | 348 |
 | 60% | **29.14** | 32.43 | 2,761 | 11,552 | 11,255 |
 | 70% | **112.7** | 115.4 | 5,123 | 20,592 | 14,723 |
-| 80% | **4,865** | 6,956 | 17,756 | 75,620 | 26,817 |
+| 80% | **4,865** | 6,956 | 17,756 | 75,620 | 28,615 |
 
 OBS-cancel-block outperforms SparseGPT at every sparsity level. AWP stays close to the second-order methods at 30–40% sparsity but collapses sharply from 50% onwards (527 at 50%, 17,756 at 80%), mirroring its behaviour on the 1B transformer. The no-correction methods collapse even more dramatically (Wanda PPL 75,620 at 80%). Full results in `results/sparsity_sweep_hgrn.json`.
 
