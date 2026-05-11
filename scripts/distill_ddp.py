@@ -158,6 +158,8 @@ def parse_args():
 
     p.add_argument("--log_every",      type=int,   default=100)
     p.add_argument("--eval_every",     type=int,   default=2500)
+    p.add_argument("--save_every",     type=int,   default=0,
+                   help="Save a checkpoint every N steps (0 = disabled)")
     return p.parse_args()
 
 
@@ -261,12 +263,23 @@ def main():
                              kl=f"{kl_loss.item():.3f}",
                              sp=f"{current_sparsity(mask_pairs)*100:.1f}%")
 
+        if is_main and args.save_every > 0 and step % args.save_every == 0:
+            ckpt = os.path.join(args.output_path, f"step-{step}")
+            _tied = getattr(student, "_tied_weights_keys", None); student._tied_weights_keys = None
+            student.save_pretrained(ckpt)
+            student._tied_weights_keys = _tied
+            tokenizer.save_pretrained(ckpt)
+            print(f"\n  -> saved checkpoint {ckpt}", flush=True)
+        dist.barrier()
+
         if is_main and step % args.eval_every == 0:
             ppl = evaluate_ppl(student_ddp, tokenizer, device)
             print(f"\nStep {step}: PPL={ppl:.2f} (best={best_ppl:.2f})", flush=True)
             if ppl < best_ppl:
                 best_ppl = ppl
+                _tied = getattr(student, "_tied_weights_keys", None); student._tied_weights_keys = None
                 student.save_pretrained(os.path.join(args.output_path, "best"))
+                student._tied_weights_keys = _tied
                 tokenizer.save_pretrained(os.path.join(args.output_path, "best"))
                 print(f"  -> saved best checkpoint", flush=True)
         dist.barrier()
@@ -278,7 +291,9 @@ def main():
     if is_main:
         final_ppl = evaluate_ppl(student_ddp, tokenizer, device)
         print(f"\nFinal PPL: {final_ppl:.2f}  sparsity={current_sparsity(mask_pairs)*100:.1f}%", flush=True)
+        _tied = getattr(student, "_tied_weights_keys", None); student._tied_weights_keys = None
         student.save_pretrained(args.output_path)
+        student._tied_weights_keys = _tied
         tokenizer.save_pretrained(args.output_path)
         meta = {
             "teacher": args.teacher_path,

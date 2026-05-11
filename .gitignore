@@ -1,2 +1,8 @@
-neurips_2026-4.tex
 references.bib
+*.tex
+.claude/
+logs/
+exp/
+__pycache__/
+*.pyc
+scripts/test_write.txt

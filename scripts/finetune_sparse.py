@@ -262,7 +262,10 @@ def main():
     print(f"\nFinal PPL: {ppl:.4f}  sparsity={final_sp*100:.1f}%", flush=True)
 
     os.makedirs(args.output_path, exist_ok=True)
+    _tied = getattr(model, "_tied_weights_keys", None)
+    model._tied_weights_keys = None
     model.save_pretrained(args.output_path)
+    model._tied_weights_keys = _tied
     tokenizer.save_pretrained(args.output_path)
 
     meta = {
