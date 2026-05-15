@@ -1,0 +1,17 @@
+{
+  "hgrn-1.3B-obs-cancel-block-80pct": 4865.17,
+  "hgrn-1.3B-obs-cancel-block-80pct-ft-c4": 1086.38,
+  "hgrn-1.3B-obs-cancel-block-80pct-distill": 693.0,
+  "hgrn-1.3B-wanda-80pct": 76074.37,
+  "hgrn-1.3B-wanda-80pct-ft": 1888.79,
+  "hgrn-1.3B-wanda-80pct-distill": 1950.81,
+  "hgrn-1.3B-ria-80pct": 28680.54,
+  "hgrn-1.3B-ria-80pct-ft": 2014.56,
+  "hgrn-1.3B-ria-80pct-distill": 1956.22,
+  "hgrn-1.3B-sparsegpt-80pct": 6955.59,
+  "hgrn-1.3B-sparsegpt-80pct-ft": 1066.37,
+  "hgrn-1.3B-sparsegpt-80pct-distill": 756.14,
+  "hgrn-1.3B-awp-80pct": 17239.18,
+  "hgrn-1.3B-awp-80pct-ft": 1560.24,
+  "hgrn-1.3B-awp-80pct-distill": 1399.61
+}
