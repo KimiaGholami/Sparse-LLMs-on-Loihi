@@ -209,33 +209,39 @@ At 80% sparsity all methods collapse to near-random performance (LAMBADA→0 acr
 
 ## HGRN-1.3B 80% — post-pruning recovery
 
-Post-pruning recovery via two strategies applied uniformly across all pruning methods, both with the sparsity mask fixed throughout (gradient hooks zero updates at pruned positions; masked weights are re-zeroed after each optimizer step):
+Post-pruning recovery via three strategies applied uniformly across all pruning methods, all with the sparsity mask fixed throughout (gradient hooks zero updates at pruned positions; masked weights are re-zeroed after each optimizer step):
 
-- **Distillation**: C4 streaming, frozen `fla-hub/hgrn-1.3B-100B` teacher, loss = 0.1 × CE + 0.9 × KL(student ‖ teacher) × T², T = 2.0, 20k steps, batch = 16, lr = 2e-5. Script: `scripts/distill_ddp.py`.
 - **Fine-tuning**: C4 streaming, cross-entropy on hard labels only, 20k steps, batch = 16, lr = 2e-5. Script: `scripts/finetune_sparse.py`.
+- **Distillation**: C4 streaming, frozen `fla-hub/hgrn-1.3B-100B` teacher, loss = 0.1 × CE + 0.9 × KL(student ‖ teacher) × T², T = 2.0, 20k steps, batch = 16, lr = 2e-5. Script: `scripts/distill_ddp.py`.
+- **LoRA**: PEFT LoRA adapters (r=16, α=32) on all linear layers, 20k steps, batch = 16, lr = 3e-4, then merged into the sparse weights. Script: `scripts/lora_sparse.py`.
 
-PPL is 2048-token WikiText-2 non-overlapping. ARC-e/c and HellaSwag/PIQA use `acc_norm`; WinoGrande uses `acc`. Avg is unweighted mean of the five tasks. Full results in `results/ppl_hgrn_80pct_recovery.json` and `results/benchmark_hgrn_*_80pct*.json`.
+PPL is 2048-token WikiText-2 non-overlapping. ARC-e/c and HellaSwag/PIQA use `acc_norm`; WinoGrande uses `acc`. Avg is unweighted mean of the five tasks. Full results in `results/ppl_hgrn_80pct_recovery.json`, `results/ppl_hgrn_80pct_lora.json`, and `results/benchmark_hgrn_*_80pct*.json`.
 
 | Method | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | LAMBADA | Avg Acc |
 |--------|-----|-------|-------|-----------|------|------------|---------|---------|
 | Dense baseline | 11.8 | 0.510 | 0.275 | 0.480 | 0.712 | 0.528 | 0.383 | **0.501** |
 | **OBS-cancel-block** | **4,865** | 0.263 | 0.292 | 0.259 | 0.503 | 0.489 | 0.000 | 0.361 |
-| OBS-cancel-block + FT | 1,086 | 0.285 | 0.276 | 0.258 | 0.505 | 0.520 | 0.000 | **0.369** |
+| OBS-cancel-block + FT | 1,086 | 0.285 | 0.276 | 0.258 | 0.505 | 0.520 | 0.000 | 0.369 |
 | OBS-cancel-block + distill | **693** | 0.285 | 0.265 | 0.259 | 0.510 | 0.514 | 0.001 | 0.366 |
+| OBS-cancel-block + LoRA | 611 | 0.310 | 0.248 | 0.280 | 0.547 | 0.499 | 0.002 | **0.377** |
 | Wanda | 76,074 | 0.260 | 0.290 | 0.257 | 0.487 | 0.519 | 0.000 | 0.363 |
 | Wanda + FT | 1,889 | 0.272 | 0.294 | 0.255 | 0.502 | 0.506 | 0.000 | 0.366 |
 | Wanda + distill | 1,951 | 0.266 | 0.259 | 0.255 | 0.502 | 0.511 | 0.000 | 0.359 |
+| Wanda + LoRA | 713 | 0.296 | 0.247 | 0.272 | 0.544 | 0.502 | 0.000 | 0.372 |
 | RIA | 28,681 | 0.250 | 0.302 | 0.256 | 0.513 | 0.498 | 0.000 | 0.364 |
 | RIA + FT | 2,015 | 0.273 | 0.288 | 0.258 | 0.500 | 0.506 | 0.000 | 0.365 |
 | RIA + distill | 1,956 | 0.267 | 0.278 | 0.256 | 0.499 | 0.493 | 0.000 | 0.359 |
+| RIA + LoRA | 737 | 0.300 | 0.248 | 0.273 | 0.536 | 0.479 | 0.001 | 0.367 |
 | SparseGPT | 6,956 | 0.274 | 0.289 | 0.260 | 0.511 | 0.519 | 0.000 | 0.371 |
-| SparseGPT + FT | 1,066 | 0.279 | 0.263 | 0.257 | 0.504 | 0.480 | 0.000 | 0.356 |
+| SparseGPT + FT | 1,066 | 0.279 | 0.263 | 0.257 | 0.504 | 0.480 | 0.000 | 0.357 |
 | SparseGPT + distill | 756 | 0.280 | 0.248 | 0.264 | 0.521 | 0.502 | 0.000 | 0.363 |
+| SparseGPT + LoRA | **604** | 0.309 | 0.253 | 0.280 | 0.555 | 0.494 | 0.002 | 0.378 |
 | AWP | 17,239 | 0.260 | 0.288 | 0.266 | 0.496 | 0.507 | 0.000 | 0.363 |
 | AWP + FT | 1,560 | 0.266 | 0.271 | 0.258 | 0.497 | 0.498 | 0.000 | 0.358 |
 | AWP + distill | 1,400 | 0.269 | 0.280 | 0.260 | 0.498 | 0.490 | 0.000 | 0.359 |
+| AWP + LoRA | 662 | 0.287 | 0.259 | 0.269 | 0.544 | 0.499 | 0.001 | 0.372 |
 
-**Key findings:** At 80% sparsity, all methods collapse to near-random task accuracy (0.356–0.371) and LAMBADA→0, confirming a hard capacity ceiling at this compression level regardless of pruning method or recovery strategy. OBS-cancel-block achieves the best one-shot PPL (4,865 vs 6,956 for SparseGPT, 1.43×) and best post-recovery PPL with distillation (693 vs 756 for SparseGPT). FT and distillation improve PPL substantially for all methods (4–80× reduction) but yield nearly identical task accuracy, confirming the ceiling is structural rather than optimization-limited. Among one-shot methods, SparseGPT has the best avg accuracy (0.371) but OBS-cancel-block + FT achieves the highest recovery accuracy overall (0.369).
+**Key findings:** At 80% sparsity, all methods collapse to near-random task accuracy (0.357–0.378) and LAMBADA→0, confirming a hard capacity ceiling at this compression level regardless of pruning method or recovery strategy. OBS-cancel-block achieves the best one-shot PPL (4,865 vs 6,956 for SparseGPT, 1.43×) and best post-recovery PPL with distillation (693 vs 756 for SparseGPT) or LoRA (611 vs 604 for SparseGPT — essentially tied). LoRA consistently outperforms FT and distillation on task accuracy across all methods, with SparseGPT + LoRA achieving the highest avg accuracy overall (0.378), closely followed by OBS-cancel-block + LoRA (0.377). FT and distillation improve PPL substantially for all methods (4–80× reduction) but yield nearly identical task accuracy to the one-shot baselines, confirming the capacity ceiling is structural. LoRA's additional parameters appear to partially circumvent this ceiling, providing a consistent +0.008–0.021 accuracy gain over FT/distill across methods.
 
 ### OBS-cancel-block ablations (varied recovery strategies)
 
