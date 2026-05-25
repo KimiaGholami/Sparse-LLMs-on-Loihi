@@ -1,0 +1,13 @@
+{
+  "TinyLlama-1.1B-intermediate-step-1431k-3T": 7.775058269500732,
+  "tinyllama-wanda-50pct": 10.733078002929688,
+  "tinyllama-ria-50pct": 10.772157669067383,
+  "tinyllama-awp-50pct": 10.732704162597656,
+  "tinyllama-sparsegpt-50pct": 11.825813293457031,
+  "tinyllama-obs_cancel_block-50pct": 10.119215965270996,
+  "tinyllama-wanda-80pct": 615.251953125,
+  "tinyllama-ria-80pct": 901.9617309570312,
+  "tinyllama-awp-80pct": 636.6898193359375,
+  "tinyllama-sparsegpt-80pct": 1490.4888916015625,
+  "tinyllama-obs_cancel_block-80pct": 405.8599548339844
+}

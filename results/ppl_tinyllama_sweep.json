@@ -1,0 +1,41 @@
+{
+  "tinyllama-wanda-30pct": 8.15
+,
+  "tinyllama-ria-30pct": 8.14
+,
+  "tinyllama-awp-30pct": 8.16
+,
+  "tinyllama-sparsegpt-30pct": 8.37
+,
+  "tinyllama-obs_cancel_block-30pct": 8.13
+,
+  "tinyllama-wanda-40pct": 8.82
+,
+  "tinyllama-ria-40pct": 8.81
+,
+  "tinyllama-awp-40pct": 8.82
+,
+  "tinyllama-sparsegpt-40pct": 9.41
+,
+  "tinyllama-obs_cancel_block-40pct": 8.74
+,
+  "tinyllama-wanda-60pct": 19.76
+,
+  "tinyllama-ria-60pct": 19.69
+,
+  "tinyllama-awp-60pct": 19.86
+,
+  "tinyllama-sparsegpt-60pct": 17.83
+,
+  "tinyllama-obs_cancel_block-60pct": 14.16
+,
+  "tinyllama-wanda-70pct": 94.92
+,
+  "tinyllama-ria-70pct": 96.21
+,
+  "tinyllama-awp-70pct": 95.80
+,
+  "tinyllama-sparsegpt-70pct": 62.38
+,
+  "tinyllama-obs_cancel_block-70pct": 39.42
+}
