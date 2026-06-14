@@ -251,6 +251,153 @@ def _prune_obs_cancel_block(model, cov_stats, sparsity, device,
 
 
 # ---------------------------------------------------------------------------
+# Sequential pruning — one layer at a time (SparseGPT style)
+# ---------------------------------------------------------------------------
+
+@torch.no_grad()
+def prune_model_sequential(model, batches, device, method, sparsity,
+                           damp=0.01, block_size=128):
+    """
+    Prune one linear layer at a time, SparseGPT style:
+
+      For each layer in forward order:
+        1. Register a forward hook to capture this layer's input activations
+        2. Run all calibration batches through the full model
+           (previous layers are already pruned, so activations are correct)
+        3. Compute H = (1/N) X^T X from the captured inputs
+        4. Prune this layer immediately using the chosen method
+        5. Remove the hook and free memory before moving to the next layer
+
+    Each layer's H is built from activations that reflect the pruned state of
+    all prior layers — matching the sequential approach in the original SparseGPT
+    implementation.
+    """
+    sys.path.insert(0, os.path.dirname(__file__))
+    if method == "obs_cancel_block":
+        from prune_obs_cancel import obs_cancel_block_prune_layer as _layer_fn
+    elif method == "sparsegpt":
+        from prune_sparsegpt import sparsegpt_prune_layer as _layer_fn
+    else:
+        _layer_fn = None
+
+    model.eval()
+    need_full_cov = method in ("sparsegpt", "obs_cancel_block")
+
+    layer_names = [
+        name for name, module in model.named_modules()
+        if isinstance(module, nn.Linear)
+        and name.split(".")[-1] not in SKIP_MODULES
+        and name not in SKIP_MODULES
+    ]
+    print(f"  {len(layer_names)} linear layers to prune sequentially")
+
+    total_w = total_p = 0
+
+    for idx, name in enumerate(layer_names):
+        module = dict(model.named_modules())[name]
+        in_f   = module.in_features
+
+        # ── Step 1: capture this layer's input activations ───────────────────
+        captured = []
+
+        def make_hook(buf, d):
+            def hook(mod, inp, out):
+                if inp and inp[0] is not None:
+                    x = inp[0]
+                    if x.numel() > 0 and x.shape[-1] == d:
+                        buf.append(x.detach().cpu().float())
+            return hook
+
+        h = module.register_forward_hook(make_hook(captured, in_f))
+        for batch in batches:
+            model(input_ids=batch.to(device))
+        h.remove()
+
+        if not captured:
+            print(f"  [{idx+1}/{len(layer_names)}] {name}: no activations captured, skipping")
+            continue
+
+        # ── Step 2: build H = (1/N) X^T X ───────────────────────────────────
+        X = torch.cat([x.reshape(-1, in_f) for x in captured], dim=0)  # (N, in_f)
+        del captured
+
+        if need_full_cov:
+            H = (X.T @ X) / X.shape[0]       # (in_f, in_f)
+        else:
+            H_diag = (X ** 2).mean(dim=0)     # (in_f,)  diagonal only
+        del X
+
+        # ── Step 3: prune ────────────────────────────────────────────────────
+        W    = module.weight.data.float()
+        out_f = W.shape[0]
+
+        if method in ("obs_cancel_block", "sparsegpt"):
+            H_dev  = H.to(device)
+            W_corr = _layer_fn(W, H_dev, sparsity, damp=damp, block_size=block_size)
+            module.weight.data.copy_(W_corr.to(module.weight.dtype))
+            n_pruned = (W_corr == 0).sum().item()
+            del H, H_dev, W_corr
+
+        elif method == "wanda":
+            act_rms = H_diag.sqrt().to(device)
+            k       = int(in_f * sparsity)
+            scores  = W.abs() * act_rms.unsqueeze(0)
+            _, idx_ = scores.topk(k, dim=1, largest=False)
+            mask    = torch.ones(out_f, in_f, dtype=torch.bool, device=device)
+            mask.scatter_(1, idx_, False)
+            module.weight.data[~mask] = 0.0
+            n_pruned = (~mask).sum().item()
+            del H_diag, act_rms, mask
+
+        elif method == "ria":
+            act_rms = H_diag.sqrt().to(device)
+            k       = int(in_f * sparsity)
+            Wa      = W.abs()
+            row_l1  = Wa.sum(dim=1, keepdim=True).clamp(min=1e-8)
+            col_l1  = Wa.sum(dim=0, keepdim=True).clamp(min=1e-8)
+            scores  = (Wa / row_l1 + Wa / col_l1) * (act_rms.unsqueeze(0) ** 0.5)
+            _, idx_ = scores.topk(k, dim=1, largest=False)
+            mask    = torch.ones(out_f, in_f, dtype=torch.bool, device=device)
+            mask.scatter_(1, idx_, False)
+            module.weight.data[~mask] = 0.0
+            n_pruned = (~mask).sum().item()
+            del H_diag, act_rms, mask
+
+        elif method == "awp":
+            C       = H_diag.to(device)
+            k_keep  = int(in_f * (1 - sparsity))
+            act_rms = C.sqrt()
+            _, keep = W.abs().mul(act_rms.unsqueeze(0)).topk(k_keep, dim=1, largest=True)
+            Theta   = torch.zeros_like(W)
+            Theta.scatter_(1, keep, W.gather(1, keep))
+            eta     = 2.0 / (C.sum() + 1e-8)
+            for _ in range(200):
+                grad      = -(W - Theta) * C.unsqueeze(0)
+                Z         = Theta - eta * grad
+                _, keep   = Z.abs().topk(k_keep, dim=1, largest=True)
+                Theta_new = torch.zeros_like(W)
+                Theta_new.scatter_(1, keep, Z.gather(1, keep))
+                if (Theta_new - Theta).norm() / (W.norm() + 1e-8) < 1e-4:
+                    Theta = Theta_new; break
+                Theta = Theta_new
+            module.weight.data.copy_(Theta.to(module.weight.dtype))
+            n_pruned = (Theta == 0).sum().item()
+            del H_diag, C, Theta
+
+        total_w += out_f * in_f
+        total_p += n_pruned
+
+        if device.type == "cuda":
+            torch.cuda.empty_cache()
+
+        print(f"  [{idx+1}/{len(layer_names)}] {name}  "
+              f"sparsity={n_pruned/(out_f*in_f)*100:.1f}%")
+
+    print(f"  Overall sparsity: {total_p/max(total_w,1)*100:.2f}%")
+    return total_p / max(total_w, 1)
+
+
+# ---------------------------------------------------------------------------
 # PPL evaluation (2048-token non-overlapping, WikiText-2 test)
 # ---------------------------------------------------------------------------
 
@@ -289,6 +436,10 @@ def parse_args():
     p.add_argument("--damp", type=float, default=0.01)
     p.add_argument("--block_size", type=int, default=128)
     p.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")
+    p.add_argument("--sequential", action="store_true",
+                   help="Prune one layer at a time (SparseGPT style): collect stats "
+                        "and prune each layer before moving to the next, so later "
+                        "layers see activations from already-pruned earlier layers.")
     return p.parse_args()
 
 
@@ -307,25 +458,34 @@ def main():
         ppl_before = evaluate_ppl(model, tokenizer, device)
         print(f"Dense PPL: {ppl_before:.2f}")
 
-    need_full_cov = args.method in ("sparsegpt", "obs_cancel_block")
-    print(f"Collecting calibration stats ({args.calib_data}, {args.n_calib_batches} batches) ...")
+    print(f"Building calibration batches ({args.calib_data}, {args.n_calib_batches} batches) ...")
     batches = build_calib_batches(tokenizer, args.n_calib_batches, args.batch_size,
                                    args.seq_len, calib_data=args.calib_data)
-    cov_stats, ch_stats = collect_stats(model, batches, device, need_full_cov=need_full_cov)
 
-    print(f"Pruning ({args.method}, {args.sparsity*100:.0f}% sparsity) ...")
-    if args.method == "wanda":
-        _prune_wanda(model, ch_stats, args.sparsity, device)
-    elif args.method == "ria":
-        _prune_ria(model, ch_stats, args.sparsity, device)
-    elif args.method == "awp":
-        _prune_awp(model, ch_stats, args.sparsity, device)
-    elif args.method == "sparsegpt":
-        _prune_sparsegpt(model, cov_stats, args.sparsity, device,
-                         damp=args.damp, block_size=args.block_size)
-    elif args.method == "obs_cancel_block":
-        _prune_obs_cancel_block(model, cov_stats, args.sparsity, device,
-                                damp=args.damp, block_size=args.block_size)
+    print(f"Pruning ({args.method}, {args.sparsity*100:.0f}% sparsity, "
+          f"{'sequential' if args.sequential else 'batch'} mode) ...")
+
+    if args.sequential:
+        # SparseGPT style: collect stats and prune one layer at a time
+        prune_model_sequential(model, batches, device, args.method, args.sparsity,
+                               damp=args.damp, block_size=args.block_size)
+    else:
+        # Original two-pass mode: collect all stats, then prune all layers
+        need_full_cov = args.method in ("sparsegpt", "obs_cancel_block")
+        cov_stats, ch_stats = collect_stats(model, batches, device,
+                                            need_full_cov=need_full_cov)
+        if args.method == "wanda":
+            _prune_wanda(model, ch_stats, args.sparsity, device)
+        elif args.method == "ria":
+            _prune_ria(model, ch_stats, args.sparsity, device)
+        elif args.method == "awp":
+            _prune_awp(model, ch_stats, args.sparsity, device)
+        elif args.method == "sparsegpt":
+            _prune_sparsegpt(model, cov_stats, args.sparsity, device,
+                             damp=args.damp, block_size=args.block_size)
+        elif args.method == "obs_cancel_block":
+            _prune_obs_cancel_block(model, cov_stats, args.sparsity, device,
+                                    damp=args.damp, block_size=args.block_size)
 
     ppl_after = None
     if args.eval_ppl:
@@ -334,7 +494,16 @@ def main():
 
     if args.output_path:
         os.makedirs(args.output_path, exist_ok=True)
-        model.save_pretrained(args.output_path)
+        try:
+            model.save_pretrained(args.output_path)
+        except Exception as e:
+            # FLA models fail with save_pretrained due to tied-weight list structure
+            # Fall back to safetensors direct save
+            print(f"  save_pretrained failed ({e}), falling back to safetensors ...")
+            from safetensors.torch import save_file
+            sd = {k: v.contiguous().cpu() for k, v in model.state_dict().items()}
+            save_file(sd, os.path.join(args.output_path, "model.safetensors"))
+            model.config.save_pretrained(args.output_path)
         tokenizer.save_pretrained(args.output_path)
         meta = {
             "model": args.model_path,
