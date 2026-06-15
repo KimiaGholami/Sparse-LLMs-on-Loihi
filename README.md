@@ -113,50 +113,50 @@ Experiments on [open_llama_7b](https://huggingface.co/openlm-research/open_llama
 
 | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
 |-------|-----|-------|-------|-----------|------|------------|---------|
-| Dense baseline | 6.61 | 0.723 | 0.370 | 0.526 | 0.749 | 0.675 | **0.608** |
+| Dense baseline | 6.61 | 0.678 | 0.385 | 0.694 | 0.763 | 0.675 | **0.639** |
 | **AWP** (`scripts/prune_awp.py`) | **8.10** | 0.614 | 0.336 | 0.612 | 0.732 | 0.661 | 0.591 |
+| **OBS-cancel (ours)** | **8.24** | 0.610 | 0.342 | 0.631 | 0.724 | 0.658 | 0.593 |
 | RIA (`prune_ria.py`) | 8.58 | 0.601 | 0.332 | 0.624 | 0.732 | 0.649 | 0.588 |
-| OBS-cancel-block | 8.65 | 0.632 | 0.323 | 0.460 | 0.712 | 0.643 | 0.554 |
-| Wanda (`prune_wanda.py`) | 8.69 | 0.602 | 0.347 | 0.628 | 0.732 | 0.663 | **0.595** |
-| SparseGPT | 9.51 | 0.659 | 0.349 | 0.478 | 0.725 | 0.643 | 0.571 |
+| Wanda (`prune_wanda.py`) | 8.69 | 0.602 | 0.347 | 0.628 | 0.732 | 0.663 | 0.595 |
+| SparseGPT | 9.51 | 0.609 | 0.363 | 0.649 | 0.732 | 0.643 | **0.599** |
 
 **80% sparsity:**
 
 | Model | PPL | ARC-e | ARC-c | HellaSwag | PIQA | WinoGrande | Avg Acc |
 |-------|-----|-------|-------|-----------|------|------------|---------|
-| Dense baseline | 6.61 | 0.723 | 0.370 | 0.526 | 0.749 | 0.675 | **0.608** |
+| Dense baseline | 6.61 | 0.678 | 0.385 | 0.694 | 0.763 | 0.675 | **0.639** |
 | **AWP** | **211.1** | 0.268 | 0.263 | 0.262 | 0.503 | 0.478 | 0.355 |
+| OBS-cancel (ours) | 245.5 | 0.259 | 0.270 | 0.263 | 0.497 | 0.489 | 0.356 |
 | Wanda (`prune_wanda.py`) | 1,647.4 | 0.253 | 0.267 | 0.265 | 0.499 | 0.491 | 0.355 |
-| SparseGPT | 2,071.2 | 0.269 | 0.212 | 0.258 | 0.532 | 0.505 | 0.355 |
-| RIA (`prune_ria.py`) | 2,084.1 | 0.268 | 0.268 | 0.261 | 0.495 | 0.496 | **0.357** |
-| OBS-cancel-block | 2,115.1 | 0.252 | 0.213 | 0.260 | 0.521 | 0.500 | 0.349 |
+| SparseGPT | 2,071.2 | 0.255 | 0.265 | 0.266 | 0.513 | 0.505 | **0.361** |
+| RIA (`prune_ria.py`) | 2,084.1 | 0.268 | 0.268 | 0.261 | 0.495 | 0.496 | 0.357 |
 
-At 80% sparsity AWP achieves the best PPL by a wide margin (211 vs 1,647+ for all other methods, ~10×). All methods collapse toward near-random task accuracy at this compression level; avg accuracy ranges from 0.349 to 0.357, statistically indistinguishable.
+At 80% sparsity AWP achieves the best PPL (211.1), with OBS-cancel close behind (245.5). All other methods collapse to extreme perplexity (>1,600). Task accuracy ranges from 0.355 to 0.361, statistically indistinguishable.
 
 **Key observations:**
 
-**AWP dominates at 7B scale.** AWP achieves the best PPL at every sparsity level on LLaMA-7B. At 50% sparsity it reaches PPL 8.10 and avg acc 0.591, the highest among all methods and within 3 points of the dense baseline (0.608). The ~10× PPL advantage at 80% (211 vs 2,115) is dramatic. This contrasts sharply with the 1B and HGRN-1.3B results, where AWP collapses alongside uncorrected methods — the iterative IHT search is only productive when the model has enough redundancy that per-layer reconstruction error is not catastrophic.
+**OBS-cancel (sequential) matches AWP at 50% and surpasses it at 60–70% sparsity.** With sequential layer-by-layer calibration, OBS-cancel achieves PPL 8.24 at 50% (vs AWP 8.10, within 2%) and is the best method at 60% (10.96 vs AWP 11.33) and 70% (26.85 vs AWP 31.99). Sequential calibration — where each layer's H is built from activations flowing through already-pruned earlier layers — provides more accurate Hessian estimates than independent calibration.
 
-At 50% sparsity, OBS-cancel-block achieves better PPL than SparseGPT (8.65 vs 9.51, 1.10× improvement) but trails AWP. At 80% both OBS-cancel-block and SparseGPT collapse to comparable extreme perplexity (~2,000+), making the difference not meaningful at that compression level.
+**AWP reclaims the top spot at 80% sparsity.** At 80% AWP reaches PPL 211.1, with OBS-cancel close behind at 245.5. All other methods collapse to extreme perplexity (>1,600). The crossover is consistent with IHT's iterative mask search having a structural advantage at very high sparsity, where it can revise earlier decisions in ways that one-shot greedy selection cannot.
 
-Global OBS-cancel fails on LLaMA-7B due to two compounding problems: (1) **ordering mismatch** — the global greedy mask is not column-ordered, but the OBS correction assumes column-ordered pruning; (2) **numerical drift** — k ∈ {2048, 5504} Schur complement rank-1 updates cause the residual diagonal D to drift. OBS-cancel-block fixes both by restricting each greedy selection to its own 128-column block.
+Global OBS-cancel fails on LLaMA-7B due to two compounding problems: (1) **ordering mismatch** — the global greedy mask is not column-ordered, but the OBS correction assumes column-ordered pruning; (2) **numerical drift** — k ∈ {2048, 5504} Schur complement rank-1 updates cause the residual diagonal D to drift. OBS-cancel fixes both by restricting each greedy selection to its own 128-column block, with sequential calibration providing further improvement at moderate sparsity.
 
 ## LLaMA-7B sparsity sweep
 
 WikiText-2 PPL across sparsity levels (2048-token evaluation). Dense baseline PPL: 6.61.
 
-| Sparsity | AWP | OBS-cancel-block | SparseGPT | Wanda | RIA |
-|----------|-----|-----------------|-----------|-------|-----|
-| 30% | **6.81** | 6.90 | 6.99 | 6.89 | 6.84 |
-| 40% | **7.19** | 7.41 | 7.76 | 7.40 | 7.30 |
-| 50% | **8.10** | 8.65 | 9.51 | 8.69 | 8.58 |
-| 60% | **11.33** | 12.62 | 15.64 | 14.22 | 14.40 |
-| 70% | **31.99** | 46.50 | 67.02 | 77.82 | 102.17 |
-| 80% | **211.1** | 2,115.1 | 2,071.2 | 1,647.4 | 2,084.1 |
+| Sparsity | OBS-cancel (ours) | Wanda | RIA | SparseGPT | AWP |
+|----------|-------------------|-------|-----|-----------|-----|
+| 30% | 6.87 | 6.89 | 6.84 | 6.99 | **6.81** |
+| 40% | 7.30 | 7.40 | 7.30 | 7.76 | **7.19** |
+| 50% | 8.24 | 8.69 | 8.58 | 9.51 | **8.10** |
+| 60% | **10.96** | 14.22 | 14.40 | 15.64 | 11.33 |
+| 70% | **26.85** | 77.82 | 102.17 | 67.02 | 31.99 |
+| 80% | 245.5 | 1,647.4 | 2,084.1 | 2,071.2 | **211.1** |
 
-**Key finding: AWP is the best method at every sparsity level on LLaMA-7B.** The margin grows dramatically at high sparsity: 1.01× at 30%, 1.07× at 50%, ~10× at 80%. This is the opposite of the 1B/HGRN behaviour, where AWP collapses alongside uncorrected methods. The reversal is a scale effect: LLaMA-7B's greater redundancy means per-layer reconstruction error is not catastrophic, so AWP's iterative IHT mask search finds substantially better sparse solutions than any greedy criterion.
+**Key finding: OBS-cancel (sequential) leads at 60–70% sparsity; AWP leads at 30–50% and 80%.** OBS-cancel beats AWP at 60% (10.96 vs 11.33, 1.03×) and 70% (26.85 vs 31.99, 1.19×). AWP is best at 30–50% and reclaims the lead at 80% (211.1 vs 245.5). The crossover reflects sequential calibration's advantage at moderate sparsity and IHT's iterative search advantage at very high sparsity.
 
-OBS-cancel-block outperforms SparseGPT from 30% to 70% sparsity (1.01–1.44×). At 80% both methods collapse to similar extreme perplexity. Full results in `results/sparsity_sweep_llama.json`.
+OBS-cancel outperforms SparseGPT at every sparsity level. Full results in `results/sparsity_sweep_llama.json`.
 
 ## HGRN-1.3B results
 
