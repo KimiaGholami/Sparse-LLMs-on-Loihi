@@ -7,6 +7,7 @@ Supports all five pruning methods via --method:
   awp            — iterative hard thresholding (IHT) on reconstruction objective
   sparsegpt      — OBS saliency w²/H_inv[j,j], column-ordered correction
   obs_cancel_block — OBS-cancel greedy (Schur updates) within blocks + OBS correction
+  prune_model_sequential - Sequential pruning — one layer at a time (SparseGPT style)
 
 Key difference from per-method scripts: tied / output layers (lm_head, embed_out)
 are skipped by default so their shared embedding weights are not modified.
